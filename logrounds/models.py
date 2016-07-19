@@ -157,6 +157,8 @@ class LogEntry(models.Model):
 				default=timezone.now)
 
 
+#test this out
+
 	def check_data(self):
 		""" Checks if the data is within the boundaries defined in LogDef.
 			Raises Exception if outside the absolute range, 
