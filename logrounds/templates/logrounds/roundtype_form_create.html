@@ -1,0 +1,12 @@
+{% block content %}
+<h1> Welcome to Round Creation, please fill out this form </h1>
+<form method="POST" role="form"> {% csrf_token %}
+	<h2> Current Sever Time:{{curr_time}} </h2>
+	{{ form.as_p }}
+
+	<button type="submit"> Submit </button>
+	<input type="hidden" name="next" value="request.path" />
+	<button formaction="{% url 'logrounds:home' %}">Cancel</button>
+</form>	
+{% endblock %}
+

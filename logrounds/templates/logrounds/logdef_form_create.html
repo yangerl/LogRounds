@@ -1,0 +1,13 @@
+<h1> Create one of more Log Properties </h1>
+<form method="POST" role="form"> {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit"> Submit </button> 
+    <button formaction= "{% url 'logrounds:new_period' %}?next={{request.path|urlencode}}">Add New Period</button>
+    {% if request.GET.next %}
+   		<button formaction="{% url 'logrounds:detail' request.GET.next %}">Done</button>
+    {% else %}
+    	 <button formaction="{% url 'logrounds:home'  %}">Done</button>
+    {% endif %}
+</form> 
+
+

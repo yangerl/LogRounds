@@ -1,0 +1,39 @@
+<table style='width:100%';>
+<caption style=" font-weight:bold; font-size:30pt;">
+	Upcoming Activities for {{round.rt_name}}
+	<br/> Current Server Time: {{ time }}
+</caption>
+
+	{% if logdef_qs %}
+		<tr style="font-weight:bold">
+			<th>Attribute Name</th>
+			<th>Period Start</th>
+			<th>Period End </th>
+			<th>Due Date</th>
+			<th>Completed</th>
+		</tr>
+
+		{% for lgdf, times in tuple %}
+			<tr style='text-align: center;'>
+				<td> {{ lgdf.name }} </td>
+				<td> 
+					{{ times.period_start }}
+				</td>
+				<td>
+					{{ times.period_end}}
+				</td>
+				<td> {{ times.due }} </td>
+				<td>
+					{% if times.late %}
+						<button> Log 'Missed Entry' </button>
+					{% else %}
+						<button> Enter Data </button>
+					{% endif %}
+				</td>
+			</tr>	
+		{% endfor %}
+
+	{% else %}
+		<p>This Round has no activities </p>
+	{% endif %}
+</table>

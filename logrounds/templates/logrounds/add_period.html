@@ -1,0 +1,19 @@
+{% block content %}
+<h1> {{ h1 }} </h1>
+<form method="POST" role="form"> {% csrf_token %}
+	{{ form.as_p }}
+	{% if next %}
+        <input type="hidden" name="next" value="request.path" />
+    {% endif %}
+	<button type="submit"> Submit </button>
+
+	<!--
+	<button formaction="{{request.META.HTTP_REFERER}}">Cancel</button>
+	-->
+</form>	
+<a href="{{redir}}">
+	
+	<button>Cancel</button>
+	
+</a>
+{% endblock %}

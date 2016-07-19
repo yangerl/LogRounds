@@ -1,0 +1,16 @@
+<h1> {{ h1 }} </h1>
+<h2> {{ h2 }} </h2>
+
+{% if rounds_list %}
+    <ul>
+    {% for rt in rounds_list %}
+        <li><a href="{% url 'logrounds:detail' rt.id %}">{{ rt.rt_name }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p> {{ else_p }} </p>
+{% endif %}
+
+<a href="{%url 'logrounds:home' %}">
+	<button> Home </button>
+</a>

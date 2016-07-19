@@ -1,0 +1,15 @@
+<h1> {{ h1 }} </h1>
+<form method="POST" role="form">
+	{% csrf_token %}
+	{{ form.as_p }}
+	<button type="submit"> Submit </button> 
+	<!-- <button formaction= "{% url 'logrounds:new_period' %}?next={{request.path|urlencode}}">Add New Period</button>
+		-->
+</form>
+<a href="{% url 'logrounds:new_period' %}?next={{request.path|urlencode}}" style="text-decoration: none">
+<button> Add New Period</button>
+</a>
+<br/><br/>
+<a href="{{ redir }}" style="text-decoration: none">
+<button> Cancel</button>
+</a>

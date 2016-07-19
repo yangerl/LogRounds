@@ -1,0 +1,36 @@
+<table style="display: table; margin: 0 auto; font-size:16pt">
+<caption style="text-align: center; font-weight:bold; font-size:30pt;">{{round.rt_name}} </caption>
+	<caption style="text-align: center;font-weight:bold;font-size:24pt;">
+		{{ dict.name }} 
+	</caption>
+	<caption>	
+			<br/>
+			<a href="{% url 'logrounds:edit_logdef' lgdf.id %}" style="text-decoration:none">
+				<button type="button"> Edit Values </button>
+			</a>
+			<a href="{% url 'logrounds:remove_logdef' lgdf.id %}" style="text-decoration:none"> 
+<button type="button" > Remove </button>
+</a>
+			<a href="{% url 'logrounds:detail' round.id %}" style="text-decoration:none">
+				<button type="button"> Back </button>
+			</a>
+			<br/>
+			<br/>
+	</caption>
+	<tr style="font-weight:bold"><td>Field</td><td>Value</td></tr>
+	<tr><td>Description</td><td>{{dict.desc}}</td></tr>
+	<tr><td>Is Data Qualatative?</td><td>{{dict.is_qual_data}}</td></tr>
+	<tr><td>Units</td><td>{{dict.units}}</td></tr>
+	<tr><td>Expected Range</td><td>{{dict.low}} to {{dict.high}}</td></tr>
+	<tr><td>Absolute Range</td><td>{{dict.low_low}} to {{dict.high_high}}</td></tr>
+	<tr><td>Period</td>
+		<td>
+			<table style="display: table; margin: 0 auto; font-size:14pt; padding:0; margin:0;">
+				<tr><td>Name:</td><td>{{pd.name}}</td></tr>
+				<tr><td>Scale:</td><td>{{pd.scale}} {{pd.unit}}</td></tr>
+				<tr><td>Phase (Days):</td><td>{{pd.phase_days}}</td></tr>
+				<tr><td>Phase (Hours):</td><td>{{pd.phase_hours}}</td></tr>
+				<tr><td>Phase (Mins):</td><td>{{pd.phase_min}}</td></tr>
+			</table>
+		</td></tr>
+</table>

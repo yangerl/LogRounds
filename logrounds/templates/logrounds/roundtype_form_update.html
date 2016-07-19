@@ -1,0 +1,9 @@
+{% block content %}
+<h1> Welcome to Round Creation, please fill out this form </h1>
+<form method="POST" role="form"> {% csrf_token %}
+	{{ form.as_p}}
+	<button type="submit"> Submit </button>
+	<button formaction="{{request.META.HTTP_REFERER}}">Cancel</button>
+</form>	
+{% endblock %}
+

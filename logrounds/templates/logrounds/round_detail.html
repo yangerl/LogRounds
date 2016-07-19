@@ -1,0 +1,58 @@
+<h1> {{ round.rt_name }} </h1>
+<a href="{% url 'logrounds:index' %}" style="text-decoration:none"> 
+<button>Back to Index </button>
+</a>
+<h3> Description: </h3>
+<p> {{round.rt_desc}} </p>
+<h3> Round Creation Date:</h3>
+<p> {{start_date}} </p>
+<a href="{% url 'logrounds:update_round' round.id %}" style="text-decoration:none"> 
+<button type="button"> Edit </button>
+</a>
+<a href="{% url 'logrounds:remove_round' round.id %}" style="text-decoration:none"> 
+<button type="button" > Remove </button>
+</a>
+<br/><br/><br/>
+<div style="display: table; padding:0; margin:0 auto;">
+	<div>
+		<h2> Log Attributes </h2>
+		{% if logdef_qs %}
+		<ul>
+			{% for logdef in logdef_qs %}
+			<li>
+				<a href="{% url 'logrounds:logdef_detail' logdef.id %}"> 
+				{{ logdef.name }}
+				</a>	
+			</li>
+			{% endfor %}
+		</ul>
+		<a href="{% url 'logrounds:new_logdef' %}?next={{round.id}}"> 
+		<button type="button"> Add New Attributes </button>
+		</a>
+		{% else %}
+		<p> {{ else_p }} </p>
+		{% endif %}
+	</div>
+	<div>
+		<a href="{% url 'logrounds:activities' round.id %}"> 
+		<button type="button"> Create New LogSet </button>
+		</a>
+	</div>
+	<div>
+		<h2> Recently Logged Data Sets </h2>
+		{% if logset_qs %}
+		<ul>
+			{% for logset in logset_qs %}
+			<li>
+				{{ entry }}
+				<!-- <a href="{% url 'logrounds:entry_detail' entry.id"> 
+					{{ logdef.name }}
+					</a> -->	
+			</li>
+			{% endfor %}
+		</ul>
+		{% else %}
+		<ul> No Entries </ul>
+		{% endif %}
+	</div>
+</div>
