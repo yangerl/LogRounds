@@ -125,6 +125,20 @@ class LogDef(models.Model):
 		return self.name
 
 class LogSet(models.Model):
+	MISSED_PARTIAL = -1
+	MISSED = 0
+	IN_PROGRESS = 1
+	IN_PROGRESS_LATE = 2
+	COMPLETE = 3
+	COMLETE_LATE = 4
+	Status = (
+		(MISSED_PARTIAL, 'Missed (Partial)'),
+		(MISSED, 'Missed'),
+		(IN_PROGRESS,'In Progress'),
+		(IN_PROGRESS_LATE, 'In Progress (Late)'),
+		(COMPLETE, 'Complete'),
+		(COMLETE_LATE, 'Complete (Late)')
+	)
 	#  This represents a 'row' in a log 
 	rt = models.ForeignKey(RoundType, on_delete=models.CASCADE, \
 						related_name='row')
@@ -135,7 +149,7 @@ class LogSet(models.Model):
 	next_time = models.DateTimeField()
 	log_time = models.TimeField(null=True, blank=True)
 	# 0 is missed, 1 is in-progress, 2 is complete, -1 for something else
-	status = models.IntegerField()
+	status = models.IntegerField(choices=Status)
 
 	def __str__(self):
 		rt_name = RoundType.objects.get(pk=self.rt.id).rt_name
@@ -158,40 +172,77 @@ class LogEntry(models.Model):
 				default=timezone.now)
 
 	def create_flags(self):
+		# Create Flags to determine if it is out of bounds
+		# If flag exists already toggle the boolean
+		self.check_bounds()
+
+		# Create flags determining the Timelyness of the entry
+		# Missed and Not Started entries don't exist in DB so
+		# they do not have flags. Late flags (0 is not late, 1 is late .
+		# In-progress is not-applcable b/c an entry is either completed
+		# or has not been started, no such thing so doesnt have flag
+
+		self.check_tardy()
+
+	def check_tardy(self):
+		this_logset = self.lg_set
+		this_start = self.lg_set.start_time
+		this_next = this_logset.next_time
+		this_duedate = (this_next - this_start)/2 + this_start
+		is_late = 0
+		flag_type = FlagTypes.objects.get(flag_name = "Late")
+		note = 'if entry is on-time value=0, if late value=1'
+		if (self.log_time > this_duedate):
+			is_late = 1
+		exists_already = Flags.objects.filter(log_entry=self, flag=flag_type)
+		if (not exists_already):
+			#if doesnt exist, create it
+			new_flag=Flags(
+				log_entry=self, 
+				flag=flag_type, 
+				flag_value=is_late,
+				note=note
+			)
+			new_flag.save()
+		else:
+			#this should never happen, but just in case....
+			temp = Flags.objects.get(log_entry=self, flag=flag_type)
+			temp.flag_value= is_late
+			temp.note=note
+			temp.save()
+
+
+
+
+
+	def check_bounds(self):
 		low = self.lg_def.low
 		high = self.lg_def.high
 		val = self.num_value
-		# for outside range
+		note = 'if inside range value=0,if outside range value=1'
 		boolean = 0
 		if(val < low or val > high):
 			boolean = 1
-
+			
 		flag_type = FlagTypes.objects.get(flag_name = "Outside Range")
-		exists_already = Flags.objects.filter(log_entry = self,flag=flag_type)
+		exists_already = Flags.objects.filter(log_entry=self,flag=flag_type)
+
 		if (not exists_already):
-			new_flag = Flags(log_entry=self, flag=flag_type, flag_value=boolean)
+			#if flag doesnt exist, create it
+			new_flag = Flags(
+				log_entry=self, 
+				flag=flag_type, 
+				flag_value=boolean,
+				note=note,
+			)
 			new_flag.save()
 		else:
+			#this should never happen, but just in case
+			#if flag exists, update it so that the boolean value is correct
 			temp = Flags.objects.get(log_entry = self,flag=flag_type)
 			temp.flag_value=boolean
+			temp.note=note
 			temp.save()
-
-	# def create_next_logset (self):
-	# 	""" If this logset already has a child do nothing, if it doesnt create
-	# 		The logset may already have a child if a LogEntry for a different
-	# 		LogDef has already been created. If one hasnt been then a new logset
-	# 		A must be created for the next set of entries!! """
-
-	# 	is_parent = LogSet.objects.filter(parent_ls=self.lg_set)
-	# 	if (not is_parent):
-	# 		time_delta = self.lg_def.period.parse_period()
-	# 		new_logset = LogSet(rt=self.lg_set.rt,\
-	# 							parent_ls=self.lg_set,\
-	# 							start_time=self.lg_set.end_time,\
-	# 							end_time=self.lg_set.end_time+time_delta,\
-	# 							log_time=None)
-	# 		new_logset.save()
-
 
 	def save(self, *args, **kwargs):
 		# create next logset if possible
@@ -210,6 +261,7 @@ class LogEntry(models.Model):
 			super(LogEntry,self).save(*args,**kwargs)
 			self.lg_set.log_time = self.log_time
 			self.lg_set.save()
+			self.create_flags()
 
 	def check_data(self):
 		""" Checks if the data is within the boundaries defined in LogDef.
@@ -245,9 +297,9 @@ class LogEntry(models.Model):
 		else:
 			prev_id = 'None'
 		return 'LS Id: ' + str(self.lg_set.id) + ' LD Id: '\
-				+ str(self.lg_def.id) + ' Prev ID: ' + prev_id 
+				+ str(self.lg_def.id) + ' Prev ID: ' + prev_id
+
 class FlagTypes(models.Model):
-	LogEntry = models.ManyToManyField(LogEntry, through="Flags")
 	flag_name = models.CharField(max_length=24, null=False, blank=False)
 
 	def __str__(self):
@@ -259,6 +311,7 @@ class Flags(models.Model):
 	flag = models.ForeignKey(FlagTypes, on_delete=models.CASCADE,\
 					related_name='flagtype')
 	flag_value = models.IntegerField(null=False, blank=False)
+	note = models.CharField(max_length=50)
 
 	def __str__(self):
 		return 'Entry Id: ' + str(self.log_entry.id) + ' FlagType Id: '\

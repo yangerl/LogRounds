@@ -1,7 +1,10 @@
 <h1> Currently Viewing {{object}} </h1>
-<h2> Numeric Value </h2>
+<h2> Current Server Time: {{now}} </h2>
+<h3> Numeric Value </h3>
 <p> {{object.num_value}} </p>
-<h2> Qualatative Value </h2>
+<h3> Qualatative Value </h3>
 <p> {{object.select_value}} </p>
-<h2> Notes </h2>
+<h3> Notes </h3>
 <p> {{object.note}} <p>
+<a href="{% url 'logrounds:activities' object.lg_def.rt.id %}"> 
+<button> Back </button> </a>

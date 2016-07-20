@@ -75,8 +75,11 @@ class RoundDelete(DeleteView):
 def activities(request, round_id):
 	get_round = get_object_or_404(RoundType, pk=round_id)
 	logdef_qs = LogDef.objects.filter(rt=get_round)
+	logdef_id_list = set(values_list('id', flat=True))
+
 	logset_qs = set()
 	start_date = get_round.start_date
+
 
 	# MOM'S SPAGHETTI CODE WARMING
 	# THE DRAGON LIES BELOW, ONLY THE BRAVE SHOULD READ
@@ -305,7 +308,7 @@ def create_entry(request, round_id, ld_id, ls_id):
 			'parent': None,
 			'log_time': timezone.now
 		})
-	context = {'form': form, 'h1': h1,} 
+	context = {'form': form, 'h1': h1, 'round_id':round_id} 
 	return render(request, 'logrounds/logentry_form_create.html', context)
 
 class LogEntryDetailView(DetailView):
@@ -333,7 +336,7 @@ def entry_update(request, round_id, ld_id, ls_id, parent):
 			'parent': parent,
 			'log_time': timezone.now
 		})
-	context = {'form': form, 'h1': h1,} 
+	context = {'form': form, 'h1': h1, 'round_id' : round_id} 
 	return render(request, 'logrounds/logentry_form_create.html', context)
 
 

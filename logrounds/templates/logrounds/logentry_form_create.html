@@ -4,9 +4,7 @@
     <button type="submit"> Submit </button> 
 </form> 
 
-{% if request.GET.next %}
-<a href="{% url 'logrounds:activities' request.GET.next %}"> <button> Back </button></a>
-{% else %}
-<button formaction="{% url 'logrounds:home'  %}">Done</button>
-{% endif %}
+<a href="{% url 'logrounds:activities' round_id %}"> 
+<button> Back </button>
+</a>
 
