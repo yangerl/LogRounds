@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.utils import *
 from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpRequest
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.views.generic.detail import DetailView
 from django.core.urlresolvers import reverse_lazy
 from logrounds.models import *
 from logrounds.forms import *
@@ -74,68 +75,20 @@ class RoundDelete(DeleteView):
 def activities(request, round_id):
 	get_round = get_object_or_404(RoundType, pk=round_id)
 	logdef_qs = LogDef.objects.filter(rt=get_round)
-	entry_tuple = []
-	buffer_time = timedelta(0,0,0,0,15)
-	
 	logset_qs = set()
 	start_date = get_round.start_date
 
-
-	lowest = None
-	lowest_phase = None
-	lowest_period = None
-	buffer_time = timedelta(0,0,0,0,15)
-
 	# MOM'S SPAGHETTI CODE WARMING
-	# THE DRAGON LIES BELOW, ONLY THE BRACE SHOULD READ
+	# THE DRAGON LIES BELOW, ONLY THE BRAVE SHOULD READ
 	# Can I make this into a helper function? Who knows? it will probably
 	# only be used in this section anyways
 
-	# 										  ,   ,  
-	#                                         $,  $,     ,            
-	#                                         "ss.$ss. .s'     
-	#                                 ,     .ss$$$$$$$$$$s,              
-	#                                 $. s$$$$$$$$$$$$$$`$$Ss       
-	#                                 "$$$$$$$$$$$$$$$$$$o$$$       ,       
-	#                                s$$$$$$$$$$$$$$$$$$$$$$$$s,  ,s  
-	#                               s$$$$$$$$$"$$$$$$""""$$$$$$"$$$$$,     
-	#                               s$$$$$$$$$$s""$$$$ssssss"$$$$$$$$"   
-	#                              s$$$$$$$$$$'         `"""ss"$"$s""      
-	#                              s$$$$$$$$$$,              `"""""$  .s$$s
-	#                              s$$$$$$$$$$$$s,...               `s$$'  `
-	#                          `ssss$$$$$$$$$$$$$$$$$$$$####s.     .$$"$.   , s-
-	#                            `""""$$$$$$$$$$$$$$$$$$$$#####$$$$$$"     $.$'
-	#                                  "$$$$$$$$$$$$$$$$$$$$$####s""     .$$$|
-	#                                   "$$$$$$$$$$$$$$$$$$$$$$$$##s    .$$" $ 
-	#                                    $$""$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"   `
-	#                                   $$"  "$"$$$$$$$$$$$$$$$$$$$$S""""' 
-	#                              ,   ,"     '  $$$$$$$$$$$$$$$$####s  
-	#                              $.          .s$$$$$$$$$$$$$$$$$####"
-	#                  ,           "$s.   ..ssS$$$$$$$$$$$$$$$$$$$####"
-	#                  $           .$$$S$$$$$$$$$$$$$$$$$$$$$$$$#####"
-	#                  Ss     ..sS$$$$$$$$$$$$$$$$$$$$$$$$$$$######""
-	#                   "$$sS$$$$$$$$$$$$$$$$$$$$$$$$$$$########"
-	#            ,      s$$$$$$$$$$$$$$$$$$$$$$$$#########""'
-	#            $    s$$$$$$$$$$$$$$$$$$$$$#######""'      s'         ,
-	#            $$..$$$$$$$$$$$$$$$$$$######"'       ....,$$....    ,$
-	#             "$$$$$$$$$$$$$$$######"' ,     .sS$$$$$$$$$$$$$$$$s$$
-	#               $$$$$$$$$$$$#####"     $, .s$$$$$$$$$$$$$$$$$$$$$$$$s.
-	#    )          $$$$$$$$$$$#####'      `$$$$$$$$$###########$$$$$$$$$$$.
-	#   ((          $$$$$$$$$$$#####       $$$$$$$$###"       "####$$$$$$$$$$ 
-	#   ) \         $$$$$$$$$$$$####.     $$$$$$###"             "###$$$$$$$$$   s'
-	#  (   )        $$$$$$$$$$$$$####.   $$$$$###"                ####$$$$$$$$s$$'
-	#  )  ( (       $$"$$$$$$$$$$$#####.$$$$$###' -Tua Xiong     .###$$$$$$$$$$"
-	#  (  )  )   _,$"   $$$$$$$$$$$$######.$$##'                .###$$$$$$$$$$
-	#  ) (  ( \.         "$$$$$$$$$$$$$#######,,,.          ..####$$$$$$$$$$$"
-	# (   )$ )  )        ,$$$$$$$$$$$$$$$$$$####################$$$$$$$$$$$"        
-	# (   ($$  ( \     _sS"  `"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$S$$,       
-	#  )  )$$$s ) )  .      .   `$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"'  `$$   
-	#   (   $$$Ss/  .$,    .$,,s$$$$$$##S$$$$$$$$$$$$$$$$$$$$$$$$S""        ' 
-	#     \)_$$$$$$$$$$$$$$$$$$$$$$$##"  $$        `$$.        `$$.
-	#         `"S$$$$$$$$$$$$$$$$$#"      $          `$          `$
-	#             `"""""""""""""'         '           '           '
-	# CREDITs: http://chris.com/ascii/index.php?art=creatures/dragons
+
+	# curr_lgst_dict = {period: curr_logset}
+	# for each period, match it to the most recent logset of the entries
+
 	curr_lgst_dict={}
+
 	for lgdf in logdef_qs:
 		phase = lgdf.period.parse_phase()
 		period = lgdf.period.parse_period()
@@ -149,7 +102,6 @@ def activities(request, round_id):
 		lgst_qs  = LogSet.objects.filter(rt=get_round.id, \
 			start_time=(get_round.start_date + phase),\
 			next_time=get_round.start_date + phase + period)
-
 
 		curr_lgst = None
 		if (not lgst_qs):
@@ -181,6 +133,7 @@ def activities(request, round_id):
 				# if it was completed do nothing  to it
 				if (curr_lgst.status == 1):
 					curr_lgst.status = 0
+					curr_lgst.log_time=None
 					curr_lgst.save()
 					# create new 'curr_lgst' 1 period away
 					curr_lgst = LogSet(rt=get_round, start_time=curr_lgst.next_time\
@@ -225,17 +178,29 @@ def activities(request, round_id):
 	# Under each Period, all its LogDefs will be listed
 	# We need to get the unique set of Periods for this Round
 	pd_set = set()
-	pd_lgdf = {}
+	pd_lgdf = {} #pd_lgdf = {period: {logdef:logentry}}
+
 	for lgdf in logdef_qs:
 		pd_set.add(lgdf.period)
 
 		# key = (period, most_recent_logset_for_period) Value = [logdef1, logdef2,...]
 		# temp1 is the most recent logset for the period
+		temp_lgst = curr_lgst_dict[lgdf.period]
+		curr_entry = LogEntry.objects.filter(lg_set=temp_lgst,lg_def=lgdf).\
+			order_by('-log_time')
+		if curr_entry:
+
+			curr_entry = LogEntry.objects.get(pk=curr_entry[0].id)
+		else:
+			curr_entry = None 
 
 		if lgdf.period in pd_lgdf.keys():
-			pd_lgdf[lgdf.period].append(lgdf)
+			pd_lgdf[lgdf.period].append({lgdf:curr_entry})
 		else:
-			pd_lgdf[lgdf.period] = [lgdf]
+			pd_lgdf[lgdf.period] = [{lgdf:curr_entry}]
+
+		#use the current logdef for this period temporarily to find the entry
+
 
 	time = timezone.now()
 
@@ -244,7 +209,6 @@ def activities(request, round_id):
 	context = {
 		'round': get_round,
 		'logdef_qs' : logdef_qs,
-		'buffer_time' : buffer_time,
 		'pd_lgdf_keys' : pd_lgdf.keys(),
 		'pd_lgdf' : pd_lgdf,
 		'time' : time,
@@ -324,11 +288,56 @@ def add_period(request):
 	context = {'form': form, 'h1': h1, 'redir' : redir} 
 	return render(request, 'logrounds/add_period.html', context)
 
-def logset_details(request, round_id, logset_id):
-	pass
 
-def logentry_details(request, round_id, logset_id,logdef_id,logentry_id):
-	pass
+def create_entry(request, round_id, ld_id, ls_id):
+	h1 = ' Welcome to Data Entry, please fill out this form'
+	if request.method == "POST":
+		form = LogEntryForm(request.POST)
+		if(form.is_valid()):
+			
+			post = form.save()
+		
+			return redirect('logrounds:activities',round_id)
+	else:
+		form = LogEntryForm(initial={
+			'lg_set': LogSet.objects.get(pk=ls_id),
+			'lg_def': LogDef.objects.get(pk=ld_id),
+			'parent': None,
+			'log_time': timezone.now
+		})
+	context = {'form': form, 'h1': h1,} 
+	return render(request, 'logrounds/logentry_form_create.html', context)
+
+class LogEntryDetailView(DetailView):
+	model = LogEntry
+
+	def get_context_data(self, **kwargs):
+		context = super(LogEntryDetailView, self).get_context_data(**kwargs)
+		context['now'] = timezone.now()
+		return context
+
+
+def entry_update(request, round_id, ld_id, ls_id, parent):
+	h1 = ' Welcome to Data Entry, please fill out this form'
+	if request.method == "POST":
+		form = LogEntryForm(request.POST)
+		if(form.is_valid()):
+			
+			post = form.save()
+		
+			return redirect('logrounds:activities',round_id)
+	else:
+		form = LogEntryForm(initial={
+			'lg_set': LogSet.objects.get(pk=ls_id),
+			'lg_def': LogDef.objects.get(pk=ld_id),
+			'parent': parent,
+			'log_time': timezone.now
+		})
+	context = {'form': form, 'h1': h1,} 
+	return render(request, 'logrounds/logentry_form_create.html', context)
+
+
+
 
 
 

@@ -6,18 +6,20 @@
 	</a>
 </h1>
 {% load app_filters %}
+
 {% for key,value in pd_lgdf.items  %}
+{% with curr_logset=curr_lgst_dict|lookup:key %}
+{% with myduedate=curr_logset.start_time|due:curr_logset.next_time %}
 <table style='width:100%';>
 	<!-- keys are the period, values is the list of logdefs -->
 	<caption style=" font-weight:bold; font-size:24pt;">
 		Period Name: {{key}}
 	</caption>
 	<caption style="font-size:18pt">
-		{% with curr_logset=curr_lgst_dict|lookup:key %}
 		{{ curr_logset.start_time }} to {{ curr_logset.next_time }}
-		<br/>Due Date: {{curr_logset.start_time|due:curr_logset.next_time}} currently doesn't check against DB (doesn't trigger missing status)
-		<br/> <a href=""> <button> Enter LogSet Data </button></a>
-		{% endwith %}
+		<br/>Due Date: {{myduedate}} currently doesn't check against DB (doesn't trigger missing status)
+		<br/><br/>
+		
 	</caption>
 	<tr style="font-weight:bold">
 		<th>Attribute Name</th>
@@ -28,10 +30,43 @@
 	</tr>
 	{% for logdef in value %}
 	<tr style="text-align:center">
-		<td> {{logdef}} </td>
-		<td> Not Coded Yet </td>
+		{% with k=logdef|key %}
+			{% with logentry=logdef|lookup:k %}
+			<td> {{k}} </td>
+			{% if logentry != None %}
+				<td> {{ logentry|logtime}} </td>
+				<td>
+					<a href="{% url 'logrounds:entry_details' round.id k.id curr_logset.id logentry.id %}" style="text-decoration:none"> 
+					<button> View </button> 
+					</a>
+				</td>
+				<td> Entry Already Created </td>
+				<td> <a href="{% url 'logrounds:entry_update' round.id k.id curr_logset.id logentry.id %}" style="text-decoration:none">
+				<button> Update </button> </a>
+				 </td>
+
+			{% else %}
+				
+				{% if time > myduedate %}
+					<td> Incomplete (Late) </td>
+				{% else %}
+					<td> Incomplete </td>
+				{% endif %}
+				<td> No Entry to View </td>
+				<td> 
+				<a href="{% url 'logrounds:create_entry' round.id k.id curr_logset.id %}?next={{round.id}}">
+				<button> Create Now </button> </a>
+				</td>
+				<td> No Entry to Update </td>
+
+			{% endif %}
+			{% endwith %}
+		{% endwith %}
 	</tr>
+
 	{% endfor %}
 </table>
 <br/>
+{% endwith %}
+{% endwith %}
 {% endfor %}

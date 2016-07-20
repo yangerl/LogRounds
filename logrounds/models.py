@@ -140,7 +140,8 @@ class LogSet(models.Model):
 	def __str__(self):
 		rt_name = RoundType.objects.get(pk=self.rt.id).rt_name
 		return 	"Round Name: " + rt_name \
-				+ "\tStart Time:\t" + str(self.start_time) 
+				+ "\tStart:\t" + str(self.start_time) \
+				+ "\tNext:\t" + str(self.next_time) 
 
 
 class LogEntry(models.Model):
@@ -153,26 +154,8 @@ class LogEntry(models.Model):
 	num_value = models.FloatField(null=True, blank=True)
 	select_value = models.TextField(null=True, blank=True)
 	note = models.TextField(null=True, blank=True)
-	log_time = models.DateTimeField(null=True, blank=False, \
+	log_time = models.DateTimeField(null=False, blank=False, \
 				default=timezone.now)
-
-
-#test this out
-
-	def check_data(self):
-		""" Checks if the data is within the boundaries defined in LogDef.
-			Raises Exception if outside the absolute range, 
-			If within soft bounds, flag 'outside normal range' is false,
-			if outside bounds, flag 'outside normal range' is true """
-		low_low = self.lg_def.low_low
-		high_high = self.lg_def.high_high
-		val = self.num_value
-
-		if(val <= low_low):
-			raise Exception('low')
-		elif (val >= high_high):
-			raise Exception('high')
-	
 
 	def create_flags(self):
 		low = self.lg_def.low
@@ -214,20 +197,55 @@ class LogEntry(models.Model):
 		# create next logset if possible
 		try:
 			self.check_data()
+			self.check_unique()
+		
 		except Exception as inst:
 			if (inst.args == 'high' or inst.args =='low'):
 				raise Exception('Outside of Absolute Range, check your data')
+			elif inst.args == ('nuts',):
+				raise inst
 			else: 
 				raise inst
 		else:	
-		#	self.create_next_logset()
 			super(LogEntry,self).save(*args,**kwargs)
-			self.create_flags()	
+			self.lg_set.log_time = self.log_time
+			self.lg_set.save()
 
+	def check_data(self):
+		""" Checks if the data is within the boundaries defined in LogDef.
+			Raises Exception if outside the absolute range, 
+			If within soft bounds, flag 'outside normal range' is false,
+			if outside bounds, flag 'outside normal range' is true """
+		low_low = self.lg_def.low_low
+		high_high = self.lg_def.high_high
+		val = self.num_value
+		if low_low and high_high:
+			if(val <= low_low):
+				raise Exception('low')
+			elif (val >= high_high):
+				raise Exception('high')
+
+	def check_unique(self):
+		is_unique = LogEntry.objects.filter(
+			lg_set = self.lg_set,
+			lg_def = self.lg_def,
+			parent = self.parent,
+			num_value = self.num_value,
+			select_value = self.select_value,
+			note = self.note,
+		)
+		if is_unique.exists():	
+			raise Exception('nuts')
+		else:
+			pass
+	
 	def __str__(self):
-		return 'LogSet Id: ' + str(self.lg_set.id) + ' LogDef Id: '\
-				+ str(self.lg_def.id)
-
+		if self.parent:
+			prev_id = str(self.parent.id)
+		else:
+			prev_id = 'None'
+		return 'LS Id: ' + str(self.lg_set.id) + ' LD Id: '\
+				+ str(self.lg_def.id) + ' Prev ID: ' + prev_id 
 class FlagTypes(models.Model):
 	LogEntry = models.ManyToManyField(LogEntry, through="Flags")
 	flag_name = models.CharField(max_length=24, null=False, blank=False)

@@ -18,12 +18,14 @@ urlpatterns = [
 		name='logdef_detail'),
 	url(r'^logdef/(?P<logdef_id>[0-9]+)/edit/$', views.edit_logdef,\
 		name='edit_logdef'),
-	url(r'^logdef/(?P<pk>[0-9]+)/remove$', views.LogDefDelete.as_view(),\
+	url(r'^logdef/(?P<pk>[0-9]+)/remove/$', views.LogDefDelete.as_view(),\
 		name='remove_logdef'),
-	url(r'^round/(?P<round_id>[0-9]+)/activities$', views.activities, name='activities'),
-	url(r'^round/(?P<round_id>[0-9]+)/(?P<logset_id>[0-9]+)$',\
-		views.logset_details, name='logset_details'),
-	url(r'^round/(?P<round_id>[0-9]+)/(?P<logset_id>[0-9]+)/(?P<logdef_id>[0-9]+)/(?P<logentry_id>[0-9]+)$',\
-		views.logentry_details, name='logentry_details'),
+	url(r'^round/(?P<round_id>[0-9]+)/activities/$', views.activities, name='activities'),
+	url(r'^round/(?P<round_id>[0-9]+)/(?P<ld_id>[0-9]+)/(?P<ls_id>[0-9]+)/create/$',
+		views.create_entry, name='create_entry'),
+	url(r'^round/(?P<round_id>[0-9]+)/(?P<ld_id>[0-9]+)/(?P<ls_id>[0-9]+)/(?P<pk>[0-9]+)/$',
+		views.LogEntryDetailView.as_view(), name='entry_details'),
+	url(r'^round/(?P<round_id>[0-9]+)/(?P<ld_id>[0-9]+)/(?P<ls_id>[0-9]+)/(?P<parent>[0-9]+)/update/$',
+		views.entry_update, name='entry_update'),
 
 ]
