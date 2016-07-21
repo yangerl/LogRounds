@@ -13,7 +13,7 @@ urlpatterns = [
 	url(r'^round/remove/(?P<pk>[0-9]+)/$', RoundDelete.as_view(), name='remove_round'),
 	url(r'^add_period/$', views.add_period, name='new_period'),
 	url(r'^periods/$', views.periods, name='periods'),
-	url(r'^add_logdef/$', LogDefCreate.as_view(), name='new_logdef'),
+	url(r'^add_logdef/(?P<round_id>[0-9]+)/$', views.create_logdef, name='new_logdef'),
 	url(r'^logdef/(?P<logdef_id>[0-9]+)/$', views.logdef_detail,\
 		name='logdef_detail'),
 	url(r'^logdef/(?P<logdef_id>[0-9]+)/edit/$', views.edit_logdef,\

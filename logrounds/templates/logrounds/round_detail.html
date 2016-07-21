@@ -26,20 +26,21 @@
 			</li>
 			{% endfor %}
 		</ul>
-		<a href="{% url 'logrounds:new_logdef' %}?next={{round.id}}"> 
+		{% else %}
+		<p> No LogDefs </p>
+		{% endif %}
+		<a href="{% url 'logrounds:new_logdef' round.id %}"> 
 		<button type="button"> Add New Attributes </button>
 		</a>
-		{% else %}
-		<p> {{ else_p }} </p>
-		{% endif %}
 	</div>
 	<div>
+	<h2> Create and Enter a Set of Data </h2>
 		<a href="{% url 'logrounds:activities' round.id %}"> 
 		<button type="button"> Create New LogSet </button>
 		</a>
 	</div>
 	<div>
-		<h2> Recently Logged Data Sets </h2>
+		<h2> View Recently Logged Data Sets </h2>
 		{% if logset_qs %}
 		<ul>
 			{% for logset in logset_qs %}

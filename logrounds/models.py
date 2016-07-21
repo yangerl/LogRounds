@@ -124,6 +124,57 @@ class LogDef(models.Model):
 	def __str__(self):
 		return self.name
 
+class LogSetManager(models.Manager):
+
+	def duedate(self, logset):
+		return (logset.next_time-logset.start_time)/2 + logset.start_time
+
+	def latest_logtime(self, logset):
+		logentry_qs = LogEntry.objects.filter(lg_set=logset).order_by('-log_time')
+		if not logentry_qs:
+			return None
+		else:
+			return logentry_qs[0].log_time
+
+	def status_update(self, logset,logdef_qs):
+		logentry_qs = LogEntry.objects.filter(lg_set=logset)
+		this_lgdf_set  = logentry_qs.values_list('lg_def', flat=True)
+
+		due_date = LogSet.objects.duedate(logset)
+		latest_logtime = LogSet.objects.latest_logtime(logset)
+		newstatus = None
+
+		# True if completed, False if incomplete
+		complete = False
+		# True if empty, false if non-empty
+		empty = False
+
+		if this_lgdf_set.count() == 0:
+			empty = True
+		elif logdef_qs.count() == this_lgdf_set.count():
+			# if number of LogEntries w/ distinct LogDefs == total number
+			# of LogDefs, then the LogSet has all values filled, hence
+			# partial = False
+			complete = True
+
+		if (not empty) and (complete) and (latest_logtime <= due_date):
+			# set status to Complete (ontime) (3)
+			newstatus = 3
+		elif (not empty) and (complete) and (latest_logtime > due_date):
+			# set status to Complete (late) (4)
+			newstatus = 4
+		elif (empty) and (not complete):
+			# set status to missed (full) (0)
+			newstatus = 0
+		elif (not empty) and (not complete):
+			# set status to missed (partial) (-1)
+			newstatus = 1
+		else:
+			raise Exception('something went wrong with status settings')
+
+		return newstatus
+
+
 class LogSet(models.Model):
 	MISSED_PARTIAL = -1
 	MISSED = 0
@@ -149,8 +200,8 @@ class LogSet(models.Model):
 	next_time = models.DateTimeField()
 	log_time = models.TimeField(null=True, blank=True)
 	# 0 is missed, 1 is in-progress, 2 is complete, -1 for something else
-	status = models.IntegerField(choices=Status)
-
+	status = models.IntegerField(null=True, choices=Status)
+	objects = LogSetManager()
 	def __str__(self):
 		rt_name = RoundType.objects.get(pk=self.rt.id).rt_name
 		return 	"Round Name: " + rt_name \

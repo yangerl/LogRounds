@@ -52,7 +52,6 @@ def round_detail(request, round_id):
 class RoundCreate(CreateView):
 	template_name_suffix = '_form_create'
 	model = RoundType
-	success_url = reverse_lazy('logrounds:new_logdef')
 	fields = ['rt_name', 'rt_desc', 'start_date']
 
 	def get_context_data(self, **kwargs):
@@ -60,6 +59,8 @@ class RoundCreate(CreateView):
 		ans['curr_time'] = timezone.now()
 		return ans
 
+	def get_success_url(self):
+		return reverse_lazy('logrounds:new_logdef',kwargs={'round_id':self.object.id})
 
 class RoundUpdate(UpdateView):
 	template_name_suffix = '_form_update'
@@ -75,8 +76,6 @@ class RoundDelete(DeleteView):
 def activities(request, round_id):
 	get_round = get_object_or_404(RoundType, pk=round_id)
 	logdef_qs = LogDef.objects.filter(rt=get_round)
-	logdef_id_list = set(values_list('id', flat=True))
-
 	logset_qs = set()
 	start_date = get_round.start_date
 
@@ -128,26 +127,68 @@ def activities(request, round_id):
 		# yet during this page load. So if Steam and Temp are both hourly, and
 		# Temp has already been processed, we don't need to check Steam b/c
 		# Temp should have already made sure there are no missing LogSets
+
+		curr_time = timezone.now()
 		if (curr_lgst not in logset_qs):
 			logset_qs.add(curr_lgst)
-			curr_time = timezone.now()
 			while (curr_time > curr_lgst.next_time):
+				nxt = curr_lgst.next_time
 				# update old status to missed if it was in progress
 				# if it was completed do nothing  to it
-				if (curr_lgst.status == 1):
-					curr_lgst.status = 0
-					curr_lgst.log_time=None
+
+				
+
+				if (curr_lgst.status is None) or (curr_lgst.status == 1)\
+					or (curr_lgst.status == 2):
+					# if it is one of these 3 statuses, it must be updated!
+					# 3 lines to update status
+					curr_lgst.log_time = LogSet.objects.latest_logtime(curr_lgst)
+					curr_lgst.status = LogSet.objects.status_update(curr_lgst, logdef_qs)
 					curr_lgst.save()
-					# create new 'curr_lgst' 1 period away
+
+					# 2 lines to create next 'curr_lgst' in iteration
 					curr_lgst = LogSet(rt=get_round, start_time=curr_lgst.next_time\
 						, next_time=curr_lgst.next_time + period,\
-						log_time=timezone.now(), status=1)
+						log_time=None, status=None)
 					curr_lgst.save()
+			
 				else:
+					# if it is not None status, or inprogress we can just
+					# go to the next logset in the iteration
 					curr_lgst= LogSet.objects.get(rt=get_round, \
 						start_time=curr_lgst.next_time, \
 						next_time=curr_lgst.next_time + period)
+
+			# Now we have to give the most recent one a status!
+			# This can only be complete/complete(late)/inprogress/inprogress(late)
+			# because we know that the curr_time < curr_lgst.next_time
+
+			newstatus =LogSet.objects.status_update(curr_lgst,logdef_qs)
+			if (newstatus != 3) and (newstatus != 4):
+				# if it is considered 'missed'
+				if (curr_time <= LogSet.objects.duedate(curr_lgst)):
+					newstatus = 1
+				else:
+					newstatus = 2
+			curr_lgst.log_time = LogSet.objects.latest_logtime(curr_lgst)
+			curr_lgst.status = newstatus
+			curr_lgst.save()
+			
+				# if (curr_lgst.status == 1):
+				# 	curr_lgst.status = 0
+				# 	curr_lgst.log_time=None
+				# 	curr_lgst.save()
+				# 	# create new 'curr_lgst' 1 period away
+				# 	curr_lgst = LogSet(rt=get_round, start_time=curr_lgst.next_time\
+				# 		, next_time=curr_lgst.next_time + period,\
+				# 		log_time=timezone.now(), status=1)
+				# 	curr_lgst.save()
+				# else:
+				# 	curr_lgst= LogSet.objects.get(rt=get_round, \
+				# 		start_time=curr_lgst.next_time, \
+				# 		next_time=curr_lgst.next_time + period)
 				# iteration checks if this new logset was missed
+		
 		else:	
 			# if we are in this code block, then all the missing LogSets have
 			# already been validated when it was run for a different LogDef
@@ -219,8 +260,7 @@ def activities(request, round_id):
 	
 	}
 	return render(request, 'logrounds/activities.html', context)
-
-
+	
 class LogDefCreate(CreateView):
 
 	template_name_suffix = '_form_create'
@@ -230,6 +270,27 @@ class LogDefCreate(CreateView):
 
 	def get_success_url(self):
  	   return reverse_lazy('logrounds:new_logdef')+'?next='+str(self.object.rt.id)
+
+def create_logdef(request, round_id):
+	this_round = get_object_or_404(RoundType, pk=round_id)
+	if request.method == "POST":
+		form = LogDefForm(request.POST)
+		if(form.is_valid()):
+			post = form.save()		
+			return redirect('logrounds:new_logdef', round_id)
+				
+	else:
+		form = LogDefForm(initial={
+			'rt': this_round
+		})
+
+	context = {
+		'form': form,
+		'round' : this_round,
+	} 
+	return render(request, 'logrounds/logdef_form_create.html', context)
+
+
 
 class LogDefDelete(DeleteView):
 	model = LogDef
@@ -288,7 +349,12 @@ def add_period(request):
 			return HttpResponseRedirect(redir)
 	else:
 		form = PeriodForm()
-	context = {'form': form, 'h1': h1, 'redir' : redir} 
+	context = {
+		'form': form, 
+		'h1': h1,
+		'redir' : redir,
+		'now' : timezone.now,
+	} 
 	return render(request, 'logrounds/add_period.html', context)
 
 

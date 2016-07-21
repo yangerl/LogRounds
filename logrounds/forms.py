@@ -19,6 +19,9 @@ class LogDefForm(forms.ModelForm):
 		model = LogDef
 		fields = ('rt','period','name','desc','is_qual_data',\
 					'units','low_low','high_high','low','high')
+		widgets = {
+			'rt': forms.HiddenInput(),
+		}
 
 class LogEntryForm(forms.ModelForm):
 	

@@ -1,5 +1,6 @@
 {% block content %}
 <h1> {{ h1 }} </h1>
+<h2> Current Server Time: {{now}} </h2>
 <form method="POST" role="form"> {% csrf_token %}
 	{{ form.as_p }}
 	{% if next %}
@@ -7,9 +8,6 @@
     {% endif %}
 	<button type="submit"> Submit </button>
 
-	<!--
-	<button formaction="{{request.META.HTTP_REFERER}}">Cancel</button>
-	-->
 </form>	
 <a href="{{redir}}">
 	
