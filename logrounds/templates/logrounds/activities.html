@@ -32,7 +32,16 @@
 			{% with logentry=logdef|lookup:k %}
 			<td> {{k}} </td>
 			{% if logentry != None %}
-				<td> {{ logentry|logtime}} </td>
+				<td> 
+					{% with thislogtime=logentry|logtime %}
+						{{ thislogtime }}
+						
+						{% if thislogtime > myduedate %}
+							(Late)
+						{% endif %}
+					
+					{% endwith %}
+				</td>
 				<td>
 					<a href="{% url 'logrounds:entry_details' round.id k.id curr_logset.id logentry.id %}" style="text-decoration:none"> 
 					<button> View </button> 

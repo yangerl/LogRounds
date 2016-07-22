@@ -4,6 +4,7 @@ from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils import timezone
 from datetime import date, datetime, time, timedelta
+from django.core.exceptions import ValidationError
 import re
 
 # Create your models here.
@@ -77,7 +78,7 @@ class LogDef(models.Model):
 	# This is the frequency to generate new LogSets
 	period = models.ForeignKey(Period, on_delete = models.CASCADE,\
 			related_name = 'prd')
-	name = models.CharField(max_length=20)
+	name = models.CharField(max_length=100)
 
 	# Give info about the data being collected, location, safety etc.
 	desc = models.TextField(max_length=None)
@@ -85,7 +86,7 @@ class LogDef(models.Model):
 
 
 	is_qual_data = models.BooleanField(default=False)
-	units = models.CharField(null=True, max_length=8, blank=True)
+	units = models.CharField(null=True, max_length=20, blank=True)
 	# units might be moved to 'data types class'
 	low_low = models.FloatField(null=True, blank=True)
 	high_high = models.FloatField(null=True, blank=True)
@@ -151,24 +152,30 @@ class LogSetManager(models.Manager):
 
 		if this_lgdf_set.count() == 0:
 			empty = True
-		elif logdef_qs.count() == this_lgdf_set.count():
+		elif logdef_qs.count() >= this_lgdf_set.count():
+
 			# if number of LogEntries w/ distinct LogDefs == total number
 			# of LogDefs, then the LogSet has all values filled, hence
 			# partial = False
+
+			# >= because if there are 5 hourly logdefs, and 10 daily logdefs
+			# this_lgdf_set will only have 5 if working with hourly, while
+			# logdef_qs will have 15 (5+10). 
+			
 			complete = True
 
 		if (not empty) and (complete) and (latest_logtime <= due_date):
 			# set status to Complete (ontime) (3)
-			newstatus = 3
+			newstatus = LogSet.COMPLETE
 		elif (not empty) and (complete) and (latest_logtime > due_date):
 			# set status to Complete (late) (4)
-			newstatus = 4
+			newstatus = LogSet.COMPLETE_LATE
 		elif (empty) and (not complete):
 			# set status to missed (full) (0)
-			newstatus = 0
+			newstatus = LogSet.MISSED
 		elif (not empty) and (not complete):
 			# set status to missed (partial) (-1)
-			newstatus = 1
+			newstatus = LogSet.MISSED_PARTIAL
 		else:
 			raise Exception('something went wrong with status settings')
 
@@ -181,14 +188,14 @@ class LogSet(models.Model):
 	IN_PROGRESS = 1
 	IN_PROGRESS_LATE = 2
 	COMPLETE = 3
-	COMLETE_LATE = 4
+	COMPLETE_LATE = 4
 	Status = (
 		(MISSED_PARTIAL, 'Missed (Partial)'),
 		(MISSED, 'Missed'),
 		(IN_PROGRESS,'In Progress'),
 		(IN_PROGRESS_LATE, 'In Progress (Late)'),
 		(COMPLETE, 'Complete'),
-		(COMLETE_LATE, 'Complete (Late)')
+		(COMPLETE_LATE, 'Complete (Late)')
 	)
 	#  This represents a 'row' in a log 
 	rt = models.ForeignKey(RoundType, on_delete=models.CASCADE, \
@@ -241,12 +248,20 @@ class LogEntry(models.Model):
 		this_next = this_logset.next_time
 		this_duedate = (this_next - this_start)/2 + this_start
 		is_late = 0
-		flag_type = FlagTypes.objects.get(flag_name = "Late")
+		
 		note = 'if entry is on-time value=0, if late value=1'
 		if (self.log_time > this_duedate):
 			is_late = 1
-		exists_already = Flags.objects.filter(log_entry=self, flag=flag_type)
-		if (not exists_already):
+
+		try:
+		   flag_type = FlagTypes.objects.get(flag_name = "Late")
+		except FlagTypes.DoesNotExist:
+		   flag_type = FlagTypes(flag_name="Late")
+		   flag_type.save()
+
+		try:
+			exists_already = Flags.objects.get(log_entry=self, flag=flag_type)
+		except Flags.DoesNotExist:
 			#if doesnt exist, create it
 			new_flag=Flags(
 				log_entry=self, 
@@ -275,11 +290,16 @@ class LogEntry(models.Model):
 		if(val < low or val > high):
 			boolean = 1
 			
-		flag_type = FlagTypes.objects.get(flag_name = "Outside Range")
-		exists_already = Flags.objects.filter(log_entry=self,flag=flag_type)
+		
+		try:
+		   flag_type = FlagTypes.objects.get(flag_name = "Outside Range")
+		except FlagTypes.DoesNotExist:
+		   flag_type = FlagTypes(flag_name = "Outside Range")
+		   flag_type.save()
 
-		if (not exists_already):
-			#if flag doesnt exist, create it
+		try:
+			exists_already = Flags.objects.get(log_entry=self,flag=flag_type)
+		except Flags.DoesNotExist:
 			new_flag = Flags(
 				log_entry=self, 
 				flag=flag_type, 
@@ -287,13 +307,15 @@ class LogEntry(models.Model):
 				note=note,
 			)
 			new_flag.save()
-		else:
+		else:	
 			#this should never happen, but just in case
 			#if flag exists, update it so that the boolean value is correct
 			temp = Flags.objects.get(log_entry = self,flag=flag_type)
 			temp.flag_value=boolean
 			temp.note=note
 			temp.save()
+			
+		
 
 	def save(self, *args, **kwargs):
 		# create next logset if possible
@@ -302,8 +324,8 @@ class LogEntry(models.Model):
 			self.check_unique()
 		
 		except Exception as inst:
-			if (inst.args == 'high' or inst.args =='low'):
-				raise Exception('Outside of Absolute Range, check your data')
+			if (inst.args == ('high',) or inst.args ==('low',)):
+				raise ValidationError('Outside of Absolute Range, check your data')
 			elif inst.args == ('nuts',):
 				raise inst
 			else: 

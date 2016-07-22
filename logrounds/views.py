@@ -114,7 +114,7 @@ def activities(request, round_id):
 				start_time=get_round.start_date + phase,
 				next_time=get_round.start_date + phase + period,
 				log_time= None,
-				status = 1,)
+				status = LogSet.IN_PROGRESS,)
 			orig_lgst.save()
 			curr_lgst=orig_lgst
 		else:
@@ -134,12 +134,10 @@ def activities(request, round_id):
 			while (curr_time > curr_lgst.next_time):
 				nxt = curr_lgst.next_time
 				# update old status to missed if it was in progress
-				# if it was completed do nothing  to it
-
-				
-
-				if (curr_lgst.status is None) or (curr_lgst.status == 1)\
-					or (curr_lgst.status == 2):
+				# if it was completed do nothing  to it			
+				if (curr_lgst.status is None) \
+					or (curr_lgst.status ==	LogSet.IN_PROGRESS) \
+					or (curr_lgst.status == LogSet.IN_PROGRESS_LATE):
 					# if it is one of these 3 statuses, it must be updated!
 					# 3 lines to update status
 					curr_lgst.log_time = LogSet.objects.latest_logtime(curr_lgst)
@@ -155,21 +153,29 @@ def activities(request, round_id):
 				else:
 					# if it is not None status, or inprogress we can just
 					# go to the next logset in the iteration
-					curr_lgst= LogSet.objects.get(rt=get_round, \
-						start_time=curr_lgst.next_time, \
-						next_time=curr_lgst.next_time + period)
+					try:
+						curr_lgst= LogSet.objects.get(rt=get_round, \
+							start_time=curr_lgst.next_time, \
+							next_time=curr_lgst.next_time + period)
+					except LogSet.DoesNotExist:
+						curr_lgst = LogSet(
+										rt=get_round,\
+										start_time=curr_lgst.next_time,\
+										next_time=curr_lgst.next_time+period,\
+										log_time=None, status=None)
 
 			# Now we have to give the most recent one a status!
 			# This can only be complete/complete(late)/inprogress/inprogress(late)
 			# because we know that the curr_time < curr_lgst.next_time
 
 			newstatus =LogSet.objects.status_update(curr_lgst,logdef_qs)
-			if (newstatus != 3) and (newstatus != 4):
+			if (newstatus != LogSet.COMPLETE) \
+				and (newstatus != LogSet.COMPLETE_LATE):
 				# if it is considered 'missed'
 				if (curr_time <= LogSet.objects.duedate(curr_lgst)):
-					newstatus = 1
+					newstatus = LogSet.IN_PROGRESS
 				else:
-					newstatus = 2
+					newstatus = LogSet.IN_PROGRESS_LATE
 			curr_lgst.log_time = LogSet.objects.latest_logtime(curr_lgst)
 			curr_lgst.status = newstatus
 			curr_lgst.save()
@@ -360,21 +366,55 @@ def add_period(request):
 
 def create_entry(request, round_id, ld_id, ls_id):
 	h1 = ' Welcome to Data Entry, please fill out this form'
+	h2 = ''
+	logdef = get_object_or_404(LogDef, pk=ld_id)
+	logset = get_object_or_404(LogSet, pk=ls_id)
 	if request.method == "POST":
 		form = LogEntryForm(request.POST)
 		if(form.is_valid()):
+			# see if it is outside the absolute bounds
+			# it shouod not throw a validation error normally
+			# beacuse the 'form is valid' has already been checked
+			# the only validation error thrown should be the one
+			# that was created in the models
+			try:
+				post = form.save()
+			except ValidationError:
+
+				newPost = request.POST.copy()
+				newPost['log_time'] = timezone.now()
+				form = LogEntryForm(newPost)
+
 			
-			post = form.save()
-		
-			return redirect('logrounds:activities',round_id)
+				context = {
+					'form': form, 
+					'h1': h1, 
+					'h2': 'Value is not with absolute bounds',
+					'logdef': logdef,
+					'round_id':round_id
+				}
+				return render(
+					request, 
+					'logrounds/logentry_form_create.html', 
+					context
+				)
+
+			else:
+				return redirect('logrounds:activities',round_id)
 	else:
 		form = LogEntryForm(initial={
-			'lg_set': LogSet.objects.get(pk=ls_id),
-			'lg_def': LogDef.objects.get(pk=ld_id),
+			'lg_set': logset,
+			'lg_def': logdef,
 			'parent': None,
 			'log_time': timezone.now
 		})
-	context = {'form': form, 'h1': h1, 'round_id':round_id} 
+	context = {
+		'form': form, 
+		'h1': h1, 
+		'h2':h2, 
+		'logdef' : logdef,
+		'round_id':round_id
+	} 
 	return render(request, 'logrounds/logentry_form_create.html', context)
 
 class LogEntryDetailView(DetailView):
