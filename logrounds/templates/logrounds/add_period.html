@@ -1,6 +1,10 @@
+{% load staticfiles %}
+<link rel="stylesheet" type="text/css" href="{% static 'logrounds/form.css' %}" />
 {% block content %}
+<div id='header'>
 <h1> {{ h1 }} </h1>
 <h2> Current Server Time: {{now}} </h2>
+</div>
 <form method="POST" role="form"> {% csrf_token %}
 	{{ form.as_p }}
 	{% if next %}

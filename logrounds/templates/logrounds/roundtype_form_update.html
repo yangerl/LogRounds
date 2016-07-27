@@ -1,5 +1,9 @@
+{% load staticfiles %}
+<link rel="stylesheet" type="text/css" href="{% static 'logrounds/form.css' %}" />
 {% block content %}
-<h1> Welcome to Round Creation, please fill out this form </h1>
+<div id='header'>
+<h1> Welcome to Round Update, please fill out this form </h1>
+</div>
 <form method="POST" role="form"> {% csrf_token %}
 	{{ form.as_p}}
 	<button type="submit"> Submit </button>

@@ -1,13 +1,17 @@
+{% load staticfiles %}
+<link rel="stylesheet" type="text/css" href="{% static 'logrounds/form.css' %}" />
+<div id='header'>
 <h1> {{h1}} </h1>
 <h2> Current Attribute: {{logdef}} </h2>
 <h2> {{h2}} </h2>
-
+<a href="{% url 'logrounds:activities' round_id %}"> 
+<button> Back </button>
+</a>
+</div>
 <form method="POST" role="form"> {% csrf_token %}
 	{{ form.as_p }}
     <button type="submit"> Submit </button> 
 </form> 
 
-<a href="{% url 'logrounds:activities' round_id %}"> 
-<button> Back </button>
-</a>
+
 

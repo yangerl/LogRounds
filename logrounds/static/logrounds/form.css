@@ -1,0 +1,55 @@
+html {
+	display:block;
+	font-family: "Georgia", sans-serif;
+
+	background-color: #FCF3CF;
+	padding: 0px;
+	margin: 0px;
+}
+label{
+    display: block;
+    margin: 20px 0px 15px 0px;
+}
+
+#header {
+	background-color: #58D68D;
+	padding-bottom: 12px;
+}
+#header button{
+	background-color: #58D68D;
+}
+#header button:hover{
+	background-color: #FCF3CF; /* Green */
+	cursor: pointer; 
+	cursor: hand;
+    color: black;
+    border: 2px solid black; /* Green */
+    border-radius: 4px;
+    padding: 4px;
+}
+
+body {
+	padding: 0px;
+	margin: 0px;
+}
+
+button {
+	background-color:  #FCF3CF; /* Green */
+    color: black;
+    border: 2px solid black; /* Green */
+    -webkit-transition-duration: 0.4s; /* Safari */
+    transition-duration: 0.4s;
+    border-radius: 4px;
+    padding: 4px;
+
+}
+
+button:hover {
+	cursor: pointer; 
+	cursor: hand;
+    color: black;
+    border: 2px solid black; /* Green */
+    background-color: #82E0AA;
+    border-radius: 4px;
+    padding: 4px;
+}

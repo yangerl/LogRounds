@@ -1,0 +1,80 @@
+html {
+	display:block;
+	font-family: "Georgia", sans-serif;
+
+	background-color: #FCF3CF;
+	padding: 0px;
+	margin: 0px;
+}
+#header {
+	background-color: #58D68D;
+}
+body {
+	padding: 0px;
+	margin: 0px;
+}
+
+
+#head {
+	padding: 2px 5px 5px 5px;
+}
+
+#back {
+	background-color :  #58D68D;
+}
+#back:hover {
+	background-color : #FCF3CF;
+}
+
+.halfsize {
+	padding: 5px;
+	width: 61.81%;
+	background-color:#ABEBC6  ;
+	font-weight:bold; 
+	font-size:24pt;
+}
+.halfsize span {
+	font-size:18pt;
+}
+.halfsize span span{
+	font-size:14pt;
+}
+.container {
+	background-color:#58D68D;
+	padding-top: 1px;
+}
+.container h1 {
+	margin: 5px;
+}
+
+caption {
+	background-color:#82E0AA;
+	text-align :left;
+}
+
+table {
+	margin: 0px;
+	background-color: #FCF3CF;
+	text-align: left;
+}
+
+button {
+	background-color: #FCF3CF; /* Green */
+    color: black;
+    border: 2px solid black; /* Green */
+    -webkit-transition-duration: 0.4s; /* Safari */
+    transition-duration: 0.4s;
+    border-radius: 4px;
+    padding: 4px;
+
+}
+
+button:hover {
+	cursor: pointer; 
+	cursor: hand;
+    color: black;
+    border: 2px solid black; /* Green */
+    background-color: #ABEBC6;
+    border-radius: 4px;
+    padding: 4px;
+}

@@ -1,5 +1,9 @@
+{% load staticfiles %}
+<link rel="stylesheet" type="text/css" href="{% static 'logrounds/form.css' %}" />
+<div id='header'>
 <h1> Current Round: {{round}} </h1>
 <h2> Create a LogDef by filling out this form </h2>
+</div>
 <form method="POST" role="form"> {% csrf_token %}
     {{ form.as_p }}
     <button type="submit"> Submit </button> 
