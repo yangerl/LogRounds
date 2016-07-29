@@ -1,5 +1,5 @@
 {% load staticfiles %}
-<link rel="stylesheet" type="text/css" href="{% static 'logrounds/form.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'logrounds/generic.css' %}" />
 {% block content %}
 <div id='header'>
 <h1> Welcome to Round Creation, please fill out this form </h1>
@@ -10,7 +10,10 @@
 
 	<button type="submit"> Submit </button>
 	<input type="hidden" name="next" value="request.path" />
-	<button formaction="{% url 'logrounds:home' %}">Cancel</button>
+	<button formaction="{% url 'logrounds:index' %}">Cancel</button>
 </form>	
 {% endblock %}
+<a href="{% url 'logrounds:new_period' %}?next={{request.path|urlencode}}" style='text-decoration: none'>
+	<p><button>Add New Period</button></p>
+</a>
 

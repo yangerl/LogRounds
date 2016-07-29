@@ -1,7 +1,0 @@
-{% load staticfiles %}
-<link rel="stylesheet" type="text/css" href="{% static 'logrounds/form.css' %}" />
-<h1>
-	<div id='header' style='font-size: 40px;'> <br/> {{ head }} <br/><br/> </div>
-	<ul> <a href="{% url 'logrounds:create' %}">{{ create }}</a></ul>
-	<ul> <a href="{% url 'logrounds:index' %}"> {{ index }} </a>
-</h1>

@@ -1,4 +1,5 @@
 {% load staticfiles %}
+<link rel="stylesheet" type="text/css" href="{% static 'logrounds/generic.css' %}" />
 <link rel="stylesheet" type="text/css" href="{% static 'logrounds/round_detail.css' %}" />
 <!-- ########################################################################## -->
 <!-- ########################################################################## -->
@@ -7,25 +8,68 @@
 <script src="{% static 'logrounds/clock.js' %}"></script>
 
 <div id='header'>
-   <div class="container">
+<div>
       <h1> {{ round.rt_name }} <br/>
          Server Time: <span id='universal'></span>	
       </h1>
-      <a href="{% url 'logrounds:index' %}" style="text-decoration:none"> 
+      <a href="{% url 'logrounds:index' %}"> 
       <button>Back to Index </button>
       </a>
-      <h3> Description: </h3>
-      <p> {{round.rt_desc}} </p>
-      <h3> Round Start Date:</h3>
-      <p> {{start_date}} </p>
-      <a href="{% url 'logrounds:update_round' round.id %}" style="text-decoration:none"> 
+       <a href="{% url 'logrounds:update_round' round.id %}"> 
       <button type="button"> Edit </button>
       </a>
-      <a href="{% url 'logrounds:remove_round' round.id %}" style="text-decoration:none"> 
+      <a href="{% url 'logrounds:remove_round' round.id %}"> 
       <button type="button" > Remove </button>
       </a>
-      <br/><br/>
+      <br/>
+      </div>
+   <div class='container'>
+      <h3> Round Details </h3>
+      <table>
+         <tr> 
+            <td style='font-weight: bold;'> Description: </td>
+            <td> {{round.rt_desc}} </td>
+         </tr>
+         <tr>
+            <td style='font-weight: bold;'> Round Start Date: </td>
+            <td> {{start_date}} </td>
+         </tr>
+      </table>
+      
    </div>
+  <div class='container'>
+         <h3> Period Details</h3>
+      <table>
+      <tr>
+            <td style='font-weight: bold;'> Name: </td>
+            <td>{{ period.name }}</td>
+         </tr>
+         <tr>
+            <td style='font-weight: bold;'> Periodicity: </td>
+            <td>{{ period.scale }} {{ period.unit }}</td>
+         </tr>
+         <tr>
+            <td style='font-weight: bold;'>Phase: </td>
+            <td>
+               <table>
+                  <tr>
+                     <td> Days:</td>
+                     <td> {{period.phase_days}}
+                  </tr>
+                  <tr>
+                     <td> Hours: </td>
+                     <td> {{period.phase_hours}} </td>
+                  </tr>
+                  <tr>
+                     <td> Minutes: </td>
+                     <td> {{period.phase_min}} </td>
+                  </tr>
+               </table>
+            </td>
+         </tr>
+      </table>
+   </div>
+
 </div>
 
 
@@ -45,15 +89,17 @@
       {% else %}
       <p> No LogDefs </p>
       {% endif %}
+      <ul>
       <a href="{% url 'logrounds:new_logdef' round.id %}"> 
       <button type="button"> Add New Attributes </button>
-      </a>
+      </a></ul>
    </div>
    <div>
       <h2> Create and Enter a Set of Data </h2>
+      <ul>
       <a href="{% url 'logrounds:activities' round.id %}"> 
       <button type="button"> Create New LogSet </button>
-      </a>
+      </a></ul>
    </div>
    <div>
       <h2> View Recently Logged Data Sets </h2>

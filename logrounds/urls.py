@@ -2,13 +2,13 @@ from django.conf.urls import url
 
 from . import views
 from logrounds.views import *
-
+from django.contrib.auth.decorators import permission_required
 app_name = 'logrounds'
 urlpatterns = [
 	url(r'^index/$', views.index, name='index'),
 	url(r'^round/(?P<round_id>[0-9]+)/$', views.round_detail, name='detail'),
-	url(r'^$', views.home, name='home'),
-	url(r'^create_round/$', RoundCreate.as_view(), name='create'),
+	url(r'^$', views.index, name='index'),
+	url(r'^create_round/$', permission_required('RoundType.add_roundtype')(RoundCreate.as_view()), name='create'),
 	url(r'^round/update/(?P<pk>[0-9]+)/$', RoundUpdate.as_view(), name='update_round'),
 	url(r'^round/remove/(?P<pk>[0-9]+)/$', RoundDelete.as_view(), name='remove_round'),
 	url(r'^add_period/$', views.add_period, name='new_period'),

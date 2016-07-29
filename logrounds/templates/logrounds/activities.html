@@ -8,6 +8,7 @@
 <script src="{% static 'logrounds/clock.js' %}"></script>
 
 
+{% load app_filters %}
 <div id="header">
 <h1 style= "font-size:48px">
 	{{round.rt_name}}
@@ -21,42 +22,34 @@
 </div>
 <br/><br/>
 
-{% load app_filters %}
-
-{% for key,value in pd_lgdf.items  %}
-{% with curr_logset=curr_lgst_dict|lookup:key %}
-{% with myduedate=curr_logset.start_time|due:curr_logset.next_time %}
 <div class='container'>
-
-<h1>Period Name: {{key}}</h1>
-<table style='width:100%';>
-	<!-- keys are the period, values is the list of logdefs -->
-	
-	<caption>
-		<div class='halfsize'>
-			
-			<span>
-				Due Date: {{myduedate}}<br/>
+	<h1> Period Name: {{ period }} </h1>
+	<table style='width:100%';>
+		{% with myduedate=curr_lgst.start_time|due:curr_lgst.next_time %}
+		<caption>
+			<div class='halfsize'>
+				
 				<span>
-					{{ curr_logset.start_time }} to {{ curr_logset.next_time }}<br/>
+					Due Date: {{myduedate}}<br/>
+					<span>
+						{{ curr_lgst.start_time }} to {{ curr_lgst.next_time }}<br/>
+					</span>
 				</span>
-			<span>
-		</div>
-	</caption>
-
-	<tr style="font-weight:bold">
-		<th>Attribute Name</th>
-		<th>Completed</th>
-		<th>View Entry</th>
-		<th>Create Entry</th>
-		<th>Update Entry</th>
-	</tr>
-	{% for logdef in value %}
-	<tr>
-		{% with k=logdef|key %}
-			{% with logentry=logdef|lookup:k %}
-			<td> {{k}} </td>
-			{% if logentry != None %}
+			</div>
+		</caption>
+		{% endwith %}
+		<tr style="font-weight:bold">
+			<th>Attribute Name</th>
+			<th>Completed</th>
+			<th>Create Entry</th>
+			<th>View Entry</th>
+			<th>Update Entry</th>
+		</tr>
+		{% for logdef in logdef_qs %}
+		<tr>
+		<td> {{logdef}} </td>
+		{% with logentry=lgdf_lgentry|lookup:logdef %}
+				{% if logentry != None %}
 				<td> 
 					{% with thislogtime=logentry|logtime %}
 						{{ thislogtime }}
@@ -67,38 +60,34 @@
 					
 					{% endwith %}
 				</td>
-				<td>
-					<a href="{% url 'logrounds:entry_details' round.id k.id curr_logset.id logentry.id %}" style="text-decoration:none"> 
+
+				<td> Entry Already Created </td>
+								<td>
+					<a href="{% url 'logrounds:entry_details' round.id logdef.id curr_lgst.id logentry.id %}" style="text-decoration:none"> 
 					<button> View </button> 
 					</a>
 				</td>
-				<td> Entry Already Created </td>
-				<td> <a href="{% url 'logrounds:entry_update' round.id k.id curr_logset.id logentry.id %}" style="text-decoration:none">
+				<td> <a href="{% url 'logrounds:entry_update' round.id logdef.id curr_lgst.id logentry.id %}" style="text-decoration:none">
 				<button> Update </button> </a>
 				 </td>
 
 			{% else %}
 				
 				{% if time > myduedate %}
-					<td> Incomplete (Late) </td>
+					<td> Not Started (Late) </td>
 				{% else %}
-					<td> Incomplete </td>
+					<td> Not Started</td>
 				{% endif %}
-				<td> No Entry to View </td>
+				
 				<td> 
-				<a href="{% url 'logrounds:create_entry' round.id k.id curr_logset.id %}?next={{round.id}}">
+				<a href="{% url 'logrounds:create_entry' round.id logdef.id curr_lgst.id %}?next={{round.id}}">
 				<button> Create Now </button> </a>
 				</td>
+				<td> No Entry to View </td>
 				<td> No Entry to Update </td>
-
+				</tr>
 			{% endif %}
-			{% endwith %}
 		{% endwith %}
-	</tr>
-
-	{% endfor %}
-</table>
-{% endwith %}
-{% endwith %}
-{% endfor %}
-<div>
+		{% endfor %}
+	</table>
+</div>

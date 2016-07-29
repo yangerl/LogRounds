@@ -1,40 +1,12 @@
-html {
-	display:block;
-	font-family: "Georgia", sans-serif;
 
-	background-color: #FCF3CF;
-	padding: 0px;
-	margin: 0px;
-}
-
-#header {
-	background-color: #58D68D;
-}
-#header button{
-	background-color: #58D68D;
-}
-#header button:hover{
-	background-color: #FCF3CF; /* Green */
-	cursor: pointer; 
-	cursor: hand;
-    color: black;
-    border: 2px solid black; /* Green */
-    border-radius: 4px;
-    padding: 4px;
-}
-
-body {
-	padding: 0px;
-	margin: 0px;
-}
 .container {
+	display: inline-block;
 	background-color:#58D68D;
 	padding: 5px;
 }
 .container h1 {
 	margin: 5px;
 }
-
 caption {
 	background-color:#82E0AA;
 	text-align :left;
@@ -56,25 +28,4 @@ caption {
 #bod div {
 	padding-bottom: 20px;
 	background-color: #82E0AA;
-}
-
-button {
-	background-color:  #82E0AA; /* Green */
-    color: black;
-    border: 2px solid black; /* Green */
-    -webkit-transition-duration: 0.4s; /* Safari */
-    transition-duration: 0.4s;
-    border-radius: 4px;
-    padding: 4px;
-
-}
-
-button:hover {
-	cursor: pointer; 
-	cursor: hand;
-    color: black;
-    border: 2px solid black; /* Green */
-    background-color: #FCF3CF;
-    border-radius: 4px;
-    padding: 4px;
 }

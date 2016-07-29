@@ -11,21 +11,6 @@ import re
 
 
 @python_2_unicode_compatible
-
-class RoundType(models.Model):
-		""" This defines a series of columns. """
-		rt_name = models.CharField(max_length=50, unique = True)
-
-		#describe the purpose of the round etc.
-		rt_desc = models.TextField(max_length=None)
-		start_date = models.DateTimeField()
-
-		def get_absolute_url(self):
-			return reverse('logrounds:detail', args=[str(self.pk)])
-
-		def __str__(self):
-			return self.rt_name
-
 class Period (models.Model):
 	""" This defines the periodicity of the Round """
 	name = models.CharField(max_length=100,unique=True)
@@ -50,25 +35,38 @@ class Period (models.Model):
 
 	def parse_phase(self):
 		return timedelta(self.phase_days,0,0,0,self.phase_min,self.phase_hours)
+		"""
+		def parse_phase(self):
+			regex = re.compile('^([0-9]+)d,([0-9]+)h,([0-9]+)m$',re.UNICODE)
+			dddd= self.phase
+			match1 = re.match(regex, dddd)
+			# timedelta([days[,sec[,micro[,mill[,min[,hour[,weels]]]]]]])
+			""
+			days = match1.group(1)
+			hours = match1.group(2)
+			mins = match1.group(3)
 
-	"""
-	def parse_phase(self):
-		regex = re.compile('^([0-9]+)d,([0-9]+)h,([0-9]+)m$',re.UNICODE)
-		dddd= self.phase
-		match1 = re.match(regex, dddd)
-		# timedelta([days[,sec[,micro[,mill[,min[,hour[,weels]]]]]]])
-		""
-		days = match1.group(1)
-		hours = match1.group(2)
-		mins = match1.group(3)
-
-		phase = timedelta(int(days),0,0,0,int(mins),int(hours))
-		return phase
-	"""
+			phase = timedelta(int(days),0,0,0,int(mins),int(hours))
+			return phase
+		"""
 	def __str__(self):
 		return self.name
 
+class RoundType(models.Model):
+		""" This defines a series of columns. """
+		rt_name = models.CharField(max_length=50)
 
+		#describe the purpose of the round etc.
+		rt_desc = models.TextField(max_length=None)
+		start_date = models.DateTimeField()
+		period = models.ForeignKey(Period, on_delete = models.CASCADE,\
+			related_name = 'prd')
+
+		def get_absolute_url(self):
+			return reverse('logrounds:detail', args=[str(self.pk)])
+
+		def __str__(self):
+			return self.rt_name
 
 
 class LogDef(models.Model):
@@ -76,12 +74,11 @@ class LogDef(models.Model):
 	rt = models.ForeignKey(RoundType, on_delete=models.CASCADE,\
 			related_name = 'col')
 	# This is the frequency to generate new LogSets
-	period = models.ForeignKey(Period, on_delete = models.CASCADE,\
-			related_name = 'prd')
+	
 	name = models.CharField(max_length=100)
 
 	# Give info about the data being collected, location, safety etc.
-	desc = models.TextField(max_length=None)
+	desc = models.TextField(max_length=None, null=True, blank=True)
 
 
 

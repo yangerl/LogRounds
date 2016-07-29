@@ -6,11 +6,18 @@ html {
 	padding: 0px;
 	margin: 0px;
 }
+
+body {
+    padding: 0px;
+    margin: 0px;
+}
 label{
     display: block;
     margin: 20px 0px 15px 0px;
 }
-
+a {
+    text-decoration: none;
+}
 #header {
 	background-color: #58D68D;
 	padding-bottom: 12px;
@@ -26,11 +33,6 @@ label{
     border: 2px solid black; /* Green */
     border-radius: 4px;
     padding: 4px;
-}
-
-body {
-	padding: 0px;
-	margin: 0px;
 }
 
 button {

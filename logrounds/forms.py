@@ -3,10 +3,27 @@ from django import forms
 from .models import *
 
 class RoundTypeForm(forms.ModelForm):
+	def clean(self):
+		cleaned_data = super(RoundTypeForm, self).clean()
+		pd = cleaned_data.get("period")
+		name = cleaned_data.get("rt_name")
+		try:
+			exists_already = RoundType.objects.get(
+				rt_name=name,
+				period=pd,
+			)
+		except RoundType.DoesNotExist:
+			pass
+		else:
+			raise forms.ValidationError(
+				"This Round name and Period is not unique. \n"
+				"If you are try adding LogDefs to this existing round "
+				"or create a new round with a different period"
+			)
 
 	class Meta:
 		model = RoundType
-		fields = ('rt_name', 'rt_desc', 'start_date')
+		fields = ('rt_name', 'period', 'rt_desc', 'start_date')
 
 class PeriodForm(forms.ModelForm):
 	class Meta:
@@ -17,7 +34,7 @@ class PeriodForm(forms.ModelForm):
 class LogDefForm(forms.ModelForm):
 	class Meta:
 		model = LogDef
-		fields = ('rt','period','name','desc','is_qual_data',\
+		fields = ('rt','name','desc','is_qual_data',\
 					'units','low_low','high_high','low','high')
 		widgets = {
 			'rt': forms.HiddenInput(),

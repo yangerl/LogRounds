@@ -1,8 +1,11 @@
 {% load staticfiles %}
-<link rel="stylesheet" type="text/css" href="{% static 'logrounds/form.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'logrounds/generic.css' %}" />
 <div id='header'>
 <h1> {{ h1 }} </h1>
 <h2> {{ h2 }} </h2>
+<a href="{% url 'logrounds:create' %}">
+	<button> Create New Round (only show to admins) </button>
+</a>
 </div>
 {% if rounds_list %}
     <ul>
@@ -14,6 +17,6 @@
     <p> {{ else_p }} </p>
 {% endif %}
 
-<a href="{%url 'logrounds:home' %}">
+<a href="{%url 'logrounds:index' %}">
 	<button> Home </button>
 </a>
