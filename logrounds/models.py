@@ -29,7 +29,7 @@ class Period (models.Model):
 		elif (re.match('^h', lower)):
 			return timedelta(0,0,0,0,0,self.scale)
 		elif (re.match('^m', lower)):
-			return timedelta(0,0,0,0,scale,0)
+			return timedelta(0,0,0,0,self.scale,0)
 		else:
 			raise Exception ("uncaught unit type")
 

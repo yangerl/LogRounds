@@ -1,12 +1,43 @@
 {% load staticfiles %}
 <link rel="stylesheet" type="text/css" href="{% static 'logrounds/generic.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'logrounds/index.css' %}" />
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+<script src="{% static 'logrounds/clock.js' %}"></script>
+
+{% load app_filters %}
 <div id='header'>
-<h1> {{ h1 }} </h1>
-<h2> {{ h2 }} </h2>
+<h1> {{ h1 }} 	</h1>
+<h2> {{ h2 }}<br/><br/> Server Time: <span id='universal'></span> </h2>
 <a href="{% url 'logrounds:create' %}">
-	<button> Create New Round (only show to admins) </button>
+	<button> Create New Round (only allow admin to access this page) </button>
 </a>
 </div>
+{% if rounds_list and dd_list %}
+	<table>
+		<tr>
+			<th> Round Name </th>
+			<th> Next Due Date </th>
+		</tr>
+		{% for duedate in dd_list %}
+		
+		{% with curr_rounds=dict|lookup:duedate %}
+		{% for curr_round in curr_rounds %}
+			<tr>
+				<td> <a href="{% url 'logrounds:detail' curr_round.id %}">{{ curr_round.rt_name }}</a></td>
+				<td> {{ duedate|date:'N j, Y, H:i' }} </td>
+			</tr>	
+		{% endfor %}
+		{% endwith %}
+		
+		{% endfor %}
+	</table>
+
+{% else %}
+    <p> {{ else_p }} </p>
+{% endif %}
+
+
+<!--
 {% if rounds_list %}
     <ul>
     {% for rt in rounds_list %}
@@ -16,7 +47,7 @@
 {% else %}
     <p> {{ else_p }} </p>
 {% endif %}
-
+-->
 <a href="{%url 'logrounds:index' %}">
 	<button> Home </button>
 </a>

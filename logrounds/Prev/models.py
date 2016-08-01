@@ -32,13 +32,13 @@ class Period (models.Model):
 
 	def parse_period(self):
 		lower = self.unit.lower()
-		if (lower == 'day'or lower =='d'):
+		if (lower == 'days'or lower =='d'):
 			return timedelta(self.scale)
-		elif (lower =='hour' or lower =='h'):
+		elif (lower =='hours' or lower =='h'):
 			return timedelta(0,0,0,0,0,self.scale)
 		elif (lower =='minutes' or lower =='min' \
 				or lower =='m'):
-			return timedelta(0,0,0,0,scale,0)
+			return timedelta(0,0,0,0,self.scale,0)
 		else:
 			raise Exception ("uncaught unit type")
 

@@ -13,6 +13,24 @@ from logrounds.forms import *
 
 def index(request):
 	rounds_list = RoundType.objects.order_by('-start_date')
+	due_date_list = []
+
+	duedate_to_round = {}
+	# dictionary that stores dict -> roundlist
+	for rounds in rounds_list:
+		this_logset = update_logsets(rounds)
+		this_due_date = LogSet.objects.duedate(this_logset)
+		due_date_list.append(this_due_date)
+
+		if (this_due_date in duedate_to_round):
+			duedate_to_round[this_due_date].append(rounds)
+		else:
+			duedate_to_round[this_due_date] = [rounds]
+	
+	(due_date_list).sort()
+	due_date_list = set(due_date_list)
+	# sort ascending so that the rounds will be displayed in order
+
 	h1 = 'This is the index for all rounds that have been created!'
 	h2 = 'Click on one of these Rounds to view details'
 	else_p = 'No rounds are available.'
@@ -20,7 +38,9 @@ def index(request):
 		'rounds_list' : rounds_list,
 		'h1' : h1,
 		'h2' : h2,
-		'else_p' : else_p
+		'else_p' : else_p,
+		'dd_list' : due_date_list,
+		'dict' : duedate_to_round
 	}
 	return render(request, 'logrounds/index.html', context)
 
@@ -58,7 +78,7 @@ class RoundCreate(CreateView):
 class RoundUpdate(UpdateView):
 	template_name_suffix = '_form_update'
 	model = RoundType
-	fields = ['rt_name', 'rt_desc']
+	fields = ['rt_name', 'period', 'rt_desc']
 
 class RoundDelete(DeleteView):
 	model = RoundType
@@ -71,91 +91,93 @@ def activities(request, round_id):
 	logdef_qs = LogDef.objects.filter(rt=get_round)
 	logset_qs = LogSet.objects.filter(rt=get_round)
 	start_date = get_round.start_date
+	curr_lgst = update_logsets(get_round)
+	# Changed to a custom method named 'update_logsets'
+	# # set current logset to the original logset, then iterate to find all missing
+	# first_lgst = LogSet.objects.filter(rt=get_round.id, \
+	# 		start_time=(get_round.start_date + phase),\
+	# 		next_time=get_round.start_date + phase + period)
+	# curr_lgst = None
+	# if (not first_lgst):
+	# 	# if first logset doesnt exist, create it and set the current to it
+	# 	orig_lgst = LogSet(rt=get_round, 
+	# 			start_time=get_round.start_date + phase,
+	# 			next_time=get_round.start_date + phase + period,
+	# 			log_time= None,
+	# 			status = LogSet.IN_PROGRESS,)
+	# 	orig_lgst.save()
+	# 	curr_lgst=orig_lgst
+	# else:
+	# 	# A logset with the original time is there so we set our 
+	# 	# curr_lgst at the original (as a starting point for 
+	# 	# iteration
+	# 	curr_lgst = first_lgst[0]
 
-	# set current logset to the original logset, then iterate to find all missing
-	first_lgst = LogSet.objects.filter(rt=get_round.id, \
-			start_time=(get_round.start_date + phase),\
-			next_time=get_round.start_date + phase + period)
-	curr_lgst = None
-	if (not first_lgst):
-		# if first logset doesnt exist, create it and set the current to it
-		orig_lgst = LogSet(rt=get_round, 
-				start_time=get_round.start_date + phase,
-				next_time=get_round.start_date + phase + period,
-				log_time= None,
-				status = LogSet.IN_PROGRESS,)
-		orig_lgst.save()
-		curr_lgst=orig_lgst
-	else:
-		# A logset with the original time is there so we set our 
-		# curr_lgst at the original (as a starting point for 
-		# iteration
-		curr_lgst = first_lgst[0]
+	# curr_time = timezone.now()
+	# while (curr_time > curr_lgst.next_time):
+	# 	nxt = curr_lgst.next_time
+	# 	# update old status to missed if it was in progress
+	# 	# if it was completed do nothing  to it			
+	# 	if (curr_lgst.status is None) \
+	# 		or (curr_lgst.status ==	LogSet.IN_PROGRESS) \
+	# 		or (curr_lgst.status == LogSet.IN_PROGRESS_LATE):
+	# 		# if it is one of these 3 statuses, it must be updated!
+	# 		# 3 lines to update status
+	# 		curr_lgst.log_time = LogSet.objects.latest_logtime(curr_lgst)
+	# 		curr_lgst.status = LogSet.objects.status_update(curr_lgst, logdef_qs)
+	# 		curr_lgst.save()
 
-	curr_time = timezone.now()
-	while (curr_time > curr_lgst.next_time):
-		nxt = curr_lgst.next_time
-		# update old status to missed if it was in progress
-		# if it was completed do nothing  to it			
-		if (curr_lgst.status is None) \
-			or (curr_lgst.status ==	LogSet.IN_PROGRESS) \
-			or (curr_lgst.status == LogSet.IN_PROGRESS_LATE):
-			# if it is one of these 3 statuses, it must be updated!
-			# 3 lines to update status
-			curr_lgst.log_time = LogSet.objects.latest_logtime(curr_lgst)
-			curr_lgst.status = LogSet.objects.status_update(curr_lgst, logdef_qs)
-			curr_lgst.save()
-
-			# 2 lines to create next 'curr_lgst' in iteration
-			curr_lgst = LogSet(rt=get_round, start_time=curr_lgst.next_time\
-				, next_time=curr_lgst.next_time + period,\
-				log_time=None, status=None)
-			curr_lgst.save()
+	# 		# 2 lines to create next 'curr_lgst' in iteration
+	# 		curr_lgst = LogSet(rt=get_round, start_time=curr_lgst.next_time\
+	# 			, next_time=curr_lgst.next_time + period,\
+	# 			log_time=None, status=None)
+	# 		curr_lgst.save()
 	
-		else:
-			# if it is not None status, or inprogress we can just
-			# go to the next logset in the iteration
-			try:
-				curr_lgst= LogSet.objects.get(rt=get_round, \
-					start_time=curr_lgst.next_time, \
-					next_time=curr_lgst.next_time + period)
-			except LogSet.DoesNotExist:
-				curr_lgst = LogSet(
-								rt=get_round,\
-								start_time=curr_lgst.next_time,\
-								next_time=curr_lgst.next_time+period,\
-								log_time=None, status=None)
+	# 	else:
+	# 		# if it is not None status, or inprogress we can just
+	# 		# go to the next logset in the iteration
+	# 		try:
+	# 			curr_lgst= LogSet.objects.get(rt=get_round, \
+	# 				start_time=curr_lgst.next_time, \
+	# 				next_time=curr_lgst.next_time + period)
+	# 		except LogSet.DoesNotExist:
+	# 			curr_lgst = LogSet(
+	# 							rt=get_round,\
+	# 							start_time=curr_lgst.next_time,\
+	# 							next_time=curr_lgst.next_time+period,\
+	# 							log_time=None, status=None)
 
-		# Now we have to give the most recent one a status!
-		# This can only be complete/complete(late)/inprogress/inprogress(late)
-		# because we know that the curr_time < curr_lgst.next_time
+	# 	# Now we have to give the most recent one a status!
+	# 	# This can only be complete/complete(late)/inprogress/inprogress(late)
+	# 	# because we know that the curr_time < curr_lgst.next_time
 
-		newstatus =LogSet.objects.status_update(curr_lgst,logdef_qs)
-		if (newstatus != LogSet.COMPLETE) \
-			and (newstatus != LogSet.COMPLETE_LATE):
-			# if it is considered 'missed'
-			if (curr_time <= LogSet.objects.duedate(curr_lgst)):
-				newstatus = LogSet.IN_PROGRESS
-			else:
-				newstatus = LogSet.IN_PROGRESS_LATE
-		curr_lgst.log_time = LogSet.objects.latest_logtime(curr_lgst)
-		curr_lgst.status = newstatus
-		curr_lgst.save()
+	# 	newstatus =LogSet.objects.status_update(curr_lgst,logdef_qs)
+	# 	if (newstatus != LogSet.COMPLETE) \
+	# 		and (newstatus != LogSet.COMPLETE_LATE):
+	# 		# if it is considered 'missed'
+	# 		if (curr_time <= LogSet.objects.duedate(curr_lgst)):
+	# 			newstatus = LogSet.IN_PROGRESS
+	# 		else:
+	# 			newstatus = LogSet.IN_PROGRESS_LATE
+	# 	curr_lgst.log_time = LogSet.objects.latest_logtime(curr_lgst)
+	# 	curr_lgst.status = newstatus
+	# 	curr_lgst.save()
 		
-			# if (curr_lgst.status == 1):
-			# 	curr_lgst.status = 0
-			# 	curr_lgst.log_time=None
-			# 	curr_lgst.save()
-			# 	# create new 'curr_lgst' 1 period away
-			# 	curr_lgst = LogSet(rt=get_round, start_time=curr_lgst.next_time\
-			# 		, next_time=curr_lgst.next_time + period,\
-			# 		log_time=timezone.now(), status=1)
-			# 	curr_lgst.save()
-			# else:
-			# 	curr_lgst= LogSet.objects.get(rt=get_round, \
-			# 		start_time=curr_lgst.next_time, \
-			# 		next_time=curr_lgst.next_time + period)
-			# iteration checks if this new logset was missed
+	# 		# if (curr_lgst.status == 1):
+	# 		# 	curr_lgst.status = 0
+	# 		# 	curr_lgst.log_time=None
+	# 		# 	curr_lgst.save()
+	# 		# 	# create new 'curr_lgst' 1 period away
+	# 		# 	curr_lgst = LogSet(rt=get_round, start_time=curr_lgst.next_time\
+	# 		# 		, next_time=curr_lgst.next_time + period,\
+	# 		# 		log_time=timezone.now(), status=1)
+	# 		# 	curr_lgst.save()
+	# 		# else:
+	# 		# 	curr_lgst= LogSet.objects.get(rt=get_round, \
+	# 		# 		start_time=curr_lgst.next_time, \
+	# 		# 		next_time=curr_lgst.next_time + period)
+	# 		# iteration checks if this new logset was missed
+
 	lgdf_lgentry = {}
 
 	for lgdf in logdef_qs:
@@ -371,6 +393,82 @@ def get_next(request):
 
 #
 
-def periods(request):
-	return HttpResponse("Hello World")
+def update_logsets(get_round):
+	period = get_round.period.parse_period()
+	phase = get_round.period.parse_phase()
+	logdef_qs = LogDef.objects.filter(rt=get_round)
+	# set current logset to the original logset, then iterate to find all missing
+	#first_lgst = LogSet.objects.filter(rt=get_round.id, \
+	#		start_time=(get_round.start_date + phase),\
+	#		next_time=get_round.start_date + phase + period)
+	first_lgst = LogSet.objects.filter(rt=get_round.id).order_by('-start_time')
+	curr_lgst = None
+
+	if (not first_lgst):
+		# if first logset doesnt exist, create it and set the current to it
+		orig_lgst = LogSet(rt=get_round, 
+				start_time=get_round.start_date + phase,
+				next_time=get_round.start_date + phase + period,
+				log_time= None,
+				status = LogSet.IN_PROGRESS,)
+		orig_lgst.save()
+		curr_lgst=orig_lgst
+	else:
+		# A logset with the original time is there so we set our 
+		# curr_lgst at the original (as a starting point for 
+		# iteration
+		curr_lgst = first_lgst[0]
+
+	curr_time = timezone.now()
+
+	while (curr_time > curr_lgst.next_time):
+		nxt = curr_lgst.next_time
+
+		# update old status to missed if it was in progress
+		# if it was completed do nothing  to it			
+		if (curr_lgst.status is None) \
+			or (curr_lgst.status ==	LogSet.IN_PROGRESS) \
+			or (curr_lgst.status == LogSet.IN_PROGRESS_LATE):
+			# if it is one of these 3 statuses, it must be updated!
+			# 3 lines to update status
+			curr_lgst.log_time = LogSet.objects.latest_logtime(curr_lgst)
+			curr_lgst.status = LogSet.objects.status_update(curr_lgst, logdef_qs)
+			curr_lgst.save()
+
+			# 2 lines to create next 'curr_lgst' in iteration
+			curr_lgst = LogSet(rt=get_round, start_time=curr_lgst.next_time\
+				, next_time=curr_lgst.next_time + period,\
+				log_time=None, status=None)
+			curr_lgst.save()
 	
+		else:
+			# if it is not None status, or inprogress we can just
+			# go to the next logset in the iteration
+			try:
+				curr_lgst= LogSet.objects.get(rt=get_round, \
+					start_time=curr_lgst.next_time, \
+					next_time=curr_lgst.next_time + period)
+			except LogSet.DoesNotExist:
+				curr_lgst = LogSet(
+								rt=get_round,\
+								start_time=curr_lgst.next_time,\
+								next_time=curr_lgst.next_time+period,\
+								log_time=None, status=None)
+
+		# Now we have to give the most recent one a status!
+		# This can only be complete/complete(late)/inprogress/inprogress(late)
+		# because we know that the curr_time < curr_lgst.next_time
+
+	newstatus =LogSet.objects.status_update(curr_lgst,logdef_qs)
+
+	if (newstatus != LogSet.COMPLETE) \
+		and (newstatus != LogSet.COMPLETE_LATE):
+		# if it is considered 'missed'
+		if (curr_time <= LogSet.objects.duedate(curr_lgst)):
+			newstatus = LogSet.IN_PROGRESS
+		else:
+			newstatus = LogSet.IN_PROGRESS_LATE
+	curr_lgst.log_time = LogSet.objects.latest_logtime(curr_lgst)
+	curr_lgst.status = newstatus
+	curr_lgst.save()
+	return curr_lgst

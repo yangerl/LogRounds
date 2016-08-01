@@ -1,0 +1,13 @@
+table {
+	margin-left:auto; 
+    margin-right:auto;
+	text-align: center;
+}
+table th {
+	font-weight: bold;
+	font-size: 32px;
+}
+table td {
+	padding: 0px 50px 0px 50px;
+	font-size: 24px;
+}

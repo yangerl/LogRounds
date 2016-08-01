@@ -13,7 +13,7 @@
          Server Time: <span id='universal'></span>	
       </h1>
       <a href="{% url 'logrounds:index' %}"> 
-      <button>Back to Index </button>
+      <button> Home </button>
       </a>
        <a href="{% url 'logrounds:update_round' round.id %}"> 
       <button type="button"> Edit </button>
@@ -32,7 +32,7 @@
          </tr>
          <tr>
             <td style='font-weight: bold;'> Round Start Date: </td>
-            <td> {{start_date}} </td>
+            <td> {{start_date|date:'N j, Y, H:i'}} </td>
          </tr>
       </table>
       

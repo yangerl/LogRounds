@@ -9,6 +9,7 @@ class RoundTypeForm(forms.ModelForm):
 		fields = ('rt_name', 'rt_desc', 'start_date')
 
 class PeriodForm(forms.ModelForm):
+
 	class Meta:
 		model = Period
 		fields = ('name', 'scale','unit', 'phase')

@@ -30,9 +30,9 @@
 			<div class='halfsize'>
 				
 				<span>
-					Due Date: {{myduedate}}<br/>
+					Due Date: {{myduedate|date:'N j, Y, H:i'}}<br/>
 					<span>
-						{{ curr_lgst.start_time }} to {{ curr_lgst.next_time }}<br/>
+						{{ curr_lgst.start_time|date:'N j, Y, H:i' }} to {{ curr_lgst.next_time|date:'N j, Y, H:i' }}<br/>
 					</span>
 				</span>
 			</div>
@@ -68,7 +68,7 @@
 					</a>
 				</td>
 				<td> <a href="{% url 'logrounds:entry_update' round.id logdef.id curr_lgst.id logentry.id %}" style="text-decoration:none">
-				<button> Update </button> </a>
+				<button> Update (close this once the window is closed) </button> </a>
 				 </td>
 
 			{% else %}

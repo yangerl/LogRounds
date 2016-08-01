@@ -26,6 +26,12 @@ class RoundTypeForm(forms.ModelForm):
 		fields = ('rt_name', 'period', 'rt_desc', 'start_date')
 
 class PeriodForm(forms.ModelForm):
+	BAD_LIFE_CHOICES = (
+		('Days', 'd'),
+		('Hours', 'h'),
+		('Minutes', 'm'),
+	)
+	scale = models.CharField(max_length=5, choices=BAD_LIFE_CHOICES)
 	class Meta:
 		model = Period
 		fields = ('name', 'scale','unit', 'phase_days', 'phase_hours', "phase_min")
