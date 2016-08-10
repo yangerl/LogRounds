@@ -1,9 +1,26 @@
+{% extends 'pages/main.html' %}
 {% load staticfiles %}
+
+{% block html_head %}
+{{ page.html_head|safe }}
 <link rel="stylesheet" type="text/css" href="{% static 'logrounds/generic.css' %}" />
-{% block content %}
+<script src="{% static 'pages/js/jquery.min.js' %}"></script>
+<script src="{% static 'logrounds/clock.js' %}"></script>
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.0/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.js"></script>
+<script type="text/javascript" src="{% static 'logrounds/wickedpicker-master/src/wickedpicker.js' %}"></script>
+<script type="text/javascript">
+	$(function() {
+		$( "#id_start_date" ).datepicker();
+	});
+</script>
+{% endblock %}
+
+{% block html_body %}
+{{ page.html_body|safe }}
 <div id='header'>
 <h1> Welcome to Round Creation, please fill out this form </h1>
-<h2> Current Sever Time: {{curr_time}} </h2>
+<h2> Current Server Time: <span id='universal'></span> </h2>
 </div>
 <form method="POST" role="form"> {% csrf_token %}
 	{{ form.as_p }}
@@ -12,8 +29,12 @@
 	<input type="hidden" name="next" value="request.path" />
 	<button formaction="{% url 'logrounds:index' %}">Cancel</button>
 </form>	
-{% endblock %}
 <a href="{% url 'logrounds:new_period' %}?next={{request.path|urlencode}}" style='text-decoration: none'>
 	<p><button>Add New Period</button></p>
 </a>
+{% endblock %}
+
+
+
+
 

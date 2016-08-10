@@ -13,6 +13,7 @@ caption {
 }
 
 #bod{
+	width: 100%;
 	display: table;
 	padding:0;
 	margin: 3% auto;
@@ -28,4 +29,5 @@ caption {
 #bod div {
 	padding-bottom: 20px;
 	background-color: #82E0AA;
+
 }

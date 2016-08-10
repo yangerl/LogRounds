@@ -1,6 +1,16 @@
+
+{% extends 'pages/main.html' %}
 {% load staticfiles %}
+
+
+{% block html_head %}
+{{ page.html_head|safe }}
 <link rel="stylesheet" type="text/css" href="{% static 'logrounds/generic.css' %}" />
 <link rel="stylesheet" type="text/css" href="{% static 'logrounds/round_detail.css' %}" />
+{% endblock %}
+
+{% block html_body %}
+{{ page.html_body|safe }}
 <div id='header'>
 <div class='container'>
 <h1>{{round.rt_name}}</h1></div>
@@ -30,3 +40,5 @@
 
 </div>
 </div>
+{% endblock %}
+

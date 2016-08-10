@@ -1,3 +1,15 @@
+{% extends 'pages/main.html' %}
+{% load staticfiles %}
+
+
+{% block html_head %}
+{{ page.html_head|safe }}
+<link rel="stylesheet" type="text/css" href="{% static 'logrounds/generic.css' %}" />
+{% endblock %}
+
+{% block html_body %}
+{{ page.html_body|safe }}
+
 <h1> {{ h1 }} </h1>
 <form method="POST" role="form">
 	{% csrf_token %}
@@ -13,3 +25,6 @@
 <a href="{{ redir }}" style="text-decoration: none">
 <button> Cancel</button>
 </a>
+{% endblock %}
+
+

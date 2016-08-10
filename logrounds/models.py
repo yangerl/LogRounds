@@ -35,20 +35,7 @@ class Period (models.Model):
 
 	def parse_phase(self):
 		return timedelta(self.phase_days,0,0,0,self.phase_min,self.phase_hours)
-		"""
-		def parse_phase(self):
-			regex = re.compile('^([0-9]+)d,([0-9]+)h,([0-9]+)m$',re.UNICODE)
-			dddd= self.phase
-			match1 = re.match(regex, dddd)
-			# timedelta([days[,sec[,micro[,mill[,min[,hour[,weels]]]]]]])
-			""
-			days = match1.group(1)
-			hours = match1.group(2)
-			mins = match1.group(3)
 
-			phase = timedelta(int(days),0,0,0,int(mins),int(hours))
-			return phase
-		"""
 	def __str__(self):
 		return self.name
 
@@ -90,43 +77,17 @@ class LogDef(models.Model):
 	low = models.FloatField(null=True, blank=True)
 	high = models.FloatField(null=True, blank=True)
 
-	# def create_first_logset(self):
-	# 	# to do this we need to check if there is alreay a Logset in existence
-	# 	# Perform this step first.
-
-	# 	logsets = LogSet.objects.filter(rt=self.rt)
-	# 	# if empty create new LogSet
-	# 	if (not logsets): # python 'style' for checking empty list
-	# 		start_time = self.rt.start_date + self.period.parse_phase()
-	# 		end_time = start_time + self.period.parse_period()
-
-	# 		first_logset = LogSet(rt=self.rt, parent_ls=None,\
-	# 								start_time = start_time,\
-	# 								end_time = end_time,\
-	# 								log_time = None)
-	#		first_logset.save()
-
-	def save(self,  *args, **kwargs):
-		# change the period to match this logdef
-		
-		super(LogDef, self).save(*args, **kwargs)
-		"""
-		edit = self.period.name 
-		regex = re.compile('^(.*)/(.*)/(.*)$')
-		match = re.match(regex, edit)
-		self.period.name = match.group(3)
-		#str(self.rt.rt_name) + '/' + str(self.name) + '/' \
-			#+ match.group(3)
-		self.period.save()"""
-
 	def __str__(self):
 		return self.name
 
 class LogSetManager(models.Manager):
 
 	def duedate(self, logset):
-		return (logset.next_time-logset.start_time)/2 + logset.start_time
-
+		my_logdef = LogDef.objects.filter(rt = logset.rt)
+		if (my_logdef):
+			return (logset.next_time-logset.start_time)/2 + logset.start_time
+		else:
+			return None
 	def latest_logtime(self, logset):
 		logentry_qs = LogEntry.objects.filter(lg_set=logset).order_by('-log_time')
 		if not logentry_qs:
@@ -226,6 +187,19 @@ class LogEntry(models.Model):
 	log_time = models.DateTimeField(null=False, blank=False, \
 				default=timezone.now)
 
+	def check_value_type(self):
+		# Checks and corrects the entry values. 
+		# If the logdef is qual value then it nulls all quantative values. 
+		# If the logdef is quant value then it nulls out select value.
+		
+		this_logdef = self.lg_def
+		qual_val = this_logdef.is_qual_data
+		if (qual_val):
+			self.num_value = None
+		else:
+			self.select_value = None
+
+
 	def create_flags(self):
 		# Create Flags to determine if it is out of bounds
 		# If flag exists already toggle the boolean
@@ -240,6 +214,7 @@ class LogEntry(models.Model):
 		self.check_tardy()
 
 	def check_tardy(self):
+		# Creates a flag for whether the entry is on-time or late
 		this_logset = self.lg_set
 		this_start = self.lg_set.start_time
 		this_next = this_logset.next_time
@@ -274,11 +249,8 @@ class LogEntry(models.Model):
 			temp.note=note
 			temp.save()
 
-
-
-
-
 	def check_bounds(self):
+		# Checks that the values are inside bounds. 
 		low = self.lg_def.low
 		high = self.lg_def.high
 		val = self.num_value
@@ -327,17 +299,18 @@ class LogEntry(models.Model):
 				raise inst
 			else: 
 				raise inst
-		else:	
+		else:		
+			self.check_value_type()
 			super(LogEntry,self).save(*args,**kwargs)
 			self.lg_set.log_time = self.log_time
 			self.lg_set.save()
 			self.create_flags()
 
 	def check_data(self):
-		""" Checks if the data is within the boundaries defined in LogDef.
-			Raises Exception if outside the absolute range, 
-			If within soft bounds, flag 'outside normal range' is false,
-			if outside bounds, flag 'outside normal range' is true """
+		# Checks if the data is within the boundaries defined in LogDef.
+		# Raises Exception if outside the absolute range, 
+		# If within soft bounds, flag 'outside normal range' is false,
+		# if outside bounds, flag 'outside normal range' is true 
 		low_low = self.lg_def.low_low
 		high_high = self.lg_def.high_high
 		val = self.num_value
@@ -348,6 +321,8 @@ class LogEntry(models.Model):
 				raise Exception('high')
 
 	def check_unique(self):
+		# Custom method to check that the object is unique 
+		# (if a better or default method is found, remove this)
 		is_unique = LogEntry.objects.filter(
 			lg_set = self.lg_set,
 			lg_def = self.lg_def,

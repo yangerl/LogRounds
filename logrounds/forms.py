@@ -1,5 +1,5 @@
 from django import forms
-
+from django.contrib.admin import widgets
 from .models import *
 
 class RoundTypeForm(forms.ModelForm):
@@ -25,13 +25,28 @@ class RoundTypeForm(forms.ModelForm):
 		model = RoundType
 		fields = ('rt_name', 'period', 'rt_desc', 'start_date')
 
-class PeriodForm(forms.ModelForm):
-	BAD_LIFE_CHOICES = (
-		('Days', 'd'),
-		('Hours', 'h'),
-		('Minutes', 'm'),
+class DataGridForm(forms.Form):
+	start_date = forms.DateField(
+		label='Date:',
+
 	)
-	scale = models.CharField(max_length=5, choices=BAD_LIFE_CHOICES)
+	start_time = forms.TimeField(
+		label = 'Time:',
+	)
+	widgets = {
+		'start_date': forms.DateInput()
+	}
+
+
+
+
+class PeriodForm(forms.ModelForm):
+	MY_CHOICES = (
+		('d', 'Days'),
+		('h', 'Hours'),
+		('m', 'Minutes'),
+	)
+	unit = forms.ChoiceField(choices=MY_CHOICES)
 	class Meta:
 		model = Period
 		fields = ('name', 'scale','unit', 'phase_days', 'phase_hours', "phase_min")

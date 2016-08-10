@@ -1,57 +1,59 @@
-html {
-	display:block;
-	font-family: "Georgia", sans-serif;
-
-	background-color: #FCF3CF;
-	padding: 0px;
-	margin: 0px;
-}
-
-body {
-    padding: 0px;
-    margin: 0px;
-}
-label{
-    display: block;
-    margin: 20px 0px 15px 0px;
+#header {
+    width: 100%;
+    position:relative;
+    background-color: #58D68D;
+    padding-bottom: 12px;
+    display: inline-block;
 }
 a {
     text-decoration: none;
 }
-#header {
-	background-color: #58D68D;
-	padding-bottom: 12px;
+label{
+        display: block;
 }
-#header button{
-	background-color: #58D68D;
+input {
+    -webkit-appearance: checkbox;
 }
-#header button:hover{
-	background-color: #FCF3CF; /* Green */
-	cursor: pointer; 
-	cursor: hand;
+
+/*
+
+#myheader button{
+    background-color: #58D68D;
+}
+#myheader button:hover{
+    background-color: #FCF3CF; 
+    cursor: hand;
     color: black;
-    border: 2px solid black; /* Green */
+    border: 2px solid black; 
     border-radius: 4px;
     padding: 4px;
 }
-
 button {
-	background-color:  #FCF3CF; /* Green */
+    background-color:  #FCF3CF; 
     color: black;
-    border: 2px solid black; /* Green */
-    -webkit-transition-duration: 0.4s; /* Safari */
-    transition-duration: 0.4s;
+    border: 2px solid black; 
+    -webkit-transition-duration: 0.4s; 
     border-radius: 4px;
     padding: 4px;
 
 }
 
 button:hover {
-	cursor: pointer; 
-	cursor: hand;
+    cursor: pointer; 
+    cursor: hand;
     color: black;
-    border: 2px solid black; /* Green */
+    border: 2px solid black; 
     background-color: #82E0AA;
     border-radius: 4px;
     padding: 4px;
+}
+*/
+#content {
+    display:block;
+    font-family: "Georgia", sans-serif;
+    background-color: #FCF3CF;
+    padding: 0px;
+    margin: 0px;
+    vertical-align: baseline;
+    position: relative;
 }

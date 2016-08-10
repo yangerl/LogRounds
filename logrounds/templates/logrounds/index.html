@@ -1,13 +1,21 @@
+{% extends 'pages/main.html' %}
 {% load staticfiles %}
-<link rel="stylesheet" type="text/css" href="{% static 'logrounds/generic.css' %}" />
-<link rel="stylesheet" type="text/css" href="{% static 'logrounds/index.css' %}" />
-<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
-<script src="{% static 'logrounds/clock.js' %}"></script>
 
 {% load app_filters %}
+
+{% block html_head %}
+{{ page.html_head|safe }}
+<link rel="stylesheet" type="text/css" href="{% static 'logrounds/generic.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'logrounds/index.css' %}" />
+<script src="{% static 'pages/js/jquery.min.js' %}"></script>
+<script src="{% static 'logrounds/clock.js' %}"></script>
+{% endblock %}
+
+{% block html_body %}
+{{ page.html_body|safe }}
 <div id='header'>
-<h1> {{ h1 }} 	</h1>
-<h2> {{ h2 }}<br/><br/> Server Time: <span id='universal'></span> </h2>
+<h1> Index of Rounds	</h1>
+<h2> Click to View Details <br/><br/> Server Time: <span id='universal'></span> </h2>
 <a href="{% url 'logrounds:create' %}">
 	<button> Create New Round (only allow admin to access this page) </button>
 </a>
@@ -24,7 +32,14 @@
 		{% for curr_round in curr_rounds %}
 			<tr>
 				<td> <a href="{% url 'logrounds:detail' curr_round.id %}">{{ curr_round.rt_name }}</a></td>
-				<td> {{ duedate|date:'N j, Y, H:i' }} </td>
+				<td> 
+					{% if duedate == max %}
+						No LogDefs Created Yet! No Action Required
+					{% else %}
+						{{ duedate|date:'N j, Y, H:i' }} 
+					{% endif %}
+					
+				</td>
 			</tr>	
 		{% endfor %}
 		{% endwith %}
@@ -33,21 +48,10 @@
 	</table>
 
 {% else %}
-    <p> {{ else_p }} </p>
+    <p> No Rounds Created Yet </p>
 {% endif %}
 
-
-<!--
-{% if rounds_list %}
-    <ul>
-    {% for rt in rounds_list %}
-        <li><a href="{% url 'logrounds:detail' rt.id %}">{{ rt.rt_name }}</a></li>
-    {% endfor %}
-    </ul>
-{% else %}
-    <p> {{ else_p }} </p>
-{% endif %}
--->
 <a href="{%url 'logrounds:index' %}">
 	<button> Home </button>
 </a>
+{% endblock %}

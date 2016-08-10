@@ -1,4 +1,19 @@
+{% extends 'pages/main.html' %}
+{% load staticfiles %}
+
+{% block html_head %}
+{{ page.html_head|safe }}
+<link rel="stylesheet" type="text/css" href="{% static 'logrounds/generic.css' %}" />
+{% endblock %}
+
+{% block html_body %}
+{{ page.html_body|safe }}
 <form action="" method="post">{% csrf_token %}
     <h1>Are you sure you want to delete "{{ object }}"?</h1>
     <input type="submit" value="Confirm" />
+
 </form>
+<a href="{{request.META.HTTP_REFERER}}"> <button >Cancel</button></a>
+{% endblock %}
+
+

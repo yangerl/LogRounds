@@ -1,63 +1,93 @@
 from django.shortcuts import get_object_or_404, render, redirect 
 
 # Create your views here.
+import json
+from django.core.serializers.json import DjangoJSONEncoder
+from django.utils.safestring import SafeString
 from django.utils import *
 from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpRequest
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic.detail import DetailView
 from django.core.urlresolvers import reverse_lazy
+from django.contrib.auth.decorators import login_required
 from logrounds.models import *
 from logrounds.forms import *
 
 
-
+@login_required
 def index(request):
 	rounds_list = RoundType.objects.order_by('-start_date')
 	due_date_list = []
-
+	max_time = timezone.make_aware(timezone.datetime.max, timezone.get_default_timezone())
 	duedate_to_round = {}
 	# dictionary that stores dict -> roundlist
 	for rounds in rounds_list:
 		this_logset = update_logsets(rounds)
 		this_due_date = LogSet.objects.duedate(this_logset)
+		if this_due_date is None:
+			this_due_date = max_time
 		due_date_list.append(this_due_date)
 
 		if (this_due_date in duedate_to_round):
 			duedate_to_round[this_due_date].append(rounds)
 		else:
 			duedate_to_round[this_due_date] = [rounds]
+
 	
 	(due_date_list).sort()
 	due_date_list = set(due_date_list)
 	# sort ascending so that the rounds will be displayed in order
-
-	h1 = 'This is the index for all rounds that have been created!'
-	h2 = 'Click on one of these Rounds to view details'
-	else_p = 'No rounds are available.'
 	context = {
 		'rounds_list' : rounds_list,
-		'h1' : h1,
-		'h2' : h2,
-		'else_p' : else_p,
 		'dd_list' : due_date_list,
-		'dict' : duedate_to_round
+		'dict' : duedate_to_round,
+		'max' : max_time,
 	}
 	return render(request, 'logrounds/index.html', context)
-
+@login_required
 def round_detail(request, round_id):
 	get_round = get_object_or_404(RoundType, pk=round_id)
 	logdef_qs = LogDef.objects.filter(rt=get_round)
 	logset_qs = set()
-	start_date = get_round.start_date
 
+
+	if request.method == "POST":
+		new_post = request.POST.copy()
+		new_post['start_time'] = request.POST['start_time'].replace(" ","")
+
+		form = DataGridForm(new_post)
+		
+		if(form.is_valid()):
+
+			start_datetime = datetime.combine(
+				form.cleaned_data['start_date'], 
+				form.cleaned_data['start_time']
+				
+			)
+			context = {
+				'round' : get_round,
+				'period' : get_round.period,
+				'logdef_qs' : logdef_qs,
+				'logset_qs' : logset_qs, 
+				'form' : form,
+
+			}
+			return redirect('logrounds:data_grid', round_id,start_datetime)
+				
+	else:
+		form = DataGridForm()
+		form.fields['start_date'].initial = get_round.start_date.strftime("%m/%d/%Y")
 
 	context = {	
 		'round' : get_round,
 		'period' : get_round.period,
 		'logdef_qs' : logdef_qs,
 		'logset_qs' : logset_qs, 
-		'start_date' : start_date,
+		'form' : form,
+		'start_date' : get_round.start_date,
 	}
+
+	
 	return render(request, 'logrounds/round_detail.html', context)
 
 
@@ -75,15 +105,18 @@ class RoundCreate(CreateView):
 	def get_success_url(self):
 		return reverse_lazy('logrounds:new_logdef',kwargs={'round_id':self.object.id})
 
+
 class RoundUpdate(UpdateView):
 	template_name_suffix = '_form_update'
 	model = RoundType
 	fields = ['rt_name', 'period', 'rt_desc']
 
+
 class RoundDelete(DeleteView):
 	model = RoundType
 	success_url = reverse_lazy('logrounds:index')
 
+@login_required
 def activities(request, round_id):
 	get_round = get_object_or_404(RoundType, pk=round_id)
 	period = get_round.period.parse_period()
@@ -205,6 +238,80 @@ def activities(request, round_id):
 	}
 	return render(request, 'logrounds/activities.html', context)
 
+@login_required
+def data_grid(request, round_id, start_time):
+
+	this_round = get_object_or_404(RoundType, pk=round_id)
+	update_logsets(this_round)
+	# All logsets after the specified time
+	logset_qs = LogSet.objects.filter(
+		rt=this_round,
+		start_time__gte = start_time
+	).order_by('start_time')
+
+	logdef_qs = LogDef.objects.filter(rt=this_round)
+
+
+	# list of json objects, each representing a row in the grid
+	# each object is as follows:
+	# {
+	#	time: Logset.start_time,
+	# 	logdef_1: str(logentry value) + logdef1 units,
+	#	logdef_2: str(logentry value) + logdef2 units,
+	#	if it has qualatative value...
+	#	logdef_n: str(logentry select_value)
+	# }
+
+	jqxJSON_input = []
+	logdef_name = []
+	id = 0
+	for lgdf in logdef_qs:
+			logdef_name.append(lgdf.name)
+
+	for lgst in logset_qs:
+		row_obj = {}
+		row_obj["id"] = str(id)
+		id += 1
+		row_obj['time'] = lgst.start_time.strftime("%m-%d-%Y %H:%M")
+		
+
+		for lgdf in logdef_qs:
+			curr_entry = LogEntry.objects.filter(
+				lg_set = lgst,
+				lg_def = lgdf,
+			).order_by('-log_time')
+
+			# If most recent entry exists continue creating the JSON obj
+			# else create json obj with the value 'DoesNotExist'
+
+			if curr_entry:
+				# change the 1 entry list to the entry
+				curr_entry = curr_entry[0] 
+				if lgdf.is_qual_data:
+					row_obj[lgdf.name] = curr_entry.select_value
+				else:
+					row_obj[lgdf.name] = str(curr_entry.num_value) +' '+ lgdf.units
+
+			else:
+				row_obj[lgdf.name] = 'Entry Does Not Exist'
+		jqxJSON_input.append(row_obj)
+	jqxJSON_input = json.dumps(jqxJSON_input,cls=DjangoJSONEncoder)
+	logdef_name = json.dumps(logdef_name,cls=DjangoJSONEncoder)
+	context = {
+		'round' : this_round,
+		'start' : start_time,
+		'logdefs' : SafeString(logdef_name),
+		'logsets' : logset_qs,
+		'json' : SafeString(jqxJSON_input),
+	} 
+
+	return render(request, 'logrounds/data_grid.html', context)
+
+
+
+
+
+
 class LogDefCreate(CreateView):
 
 	template_name_suffix = '_form_create'
@@ -215,6 +322,7 @@ class LogDefCreate(CreateView):
 	def get_success_url(self):
  	   return reverse_lazy('logrounds:new_logdef')+'?next='+str(self.object.rt.id)
 
+@login_required
 def create_logdef(request, round_id):
 	this_round = get_object_or_404(RoundType, pk=round_id)
 	if request.method == "POST":
@@ -235,12 +343,12 @@ def create_logdef(request, round_id):
 	return render(request, 'logrounds/logdef_form_create.html', context)
 
 
-
 class LogDefDelete(DeleteView):
 	model = LogDef
-	success_url = reverse_lazy('logrounds:index')
-
-
+	def get_success_url(self):
+		return reverse_lazy('logrounds:detail',kwargs={'round_id':self.object.rt.id})
+ 
+@login_required
 def logdef_detail(request, logdef_id):
 	# Queryset of the LogDef needed
 	lgdf = get_object_or_404(LogDef,pk=logdef_id)
@@ -251,6 +359,7 @@ def logdef_detail(request, logdef_id):
 	}
 	return render(request, 'logrounds/logdef_detail.html', context)
 
+@login_required
 def edit_logdef(request, logdef_id):
 	h1 = 'Edit one of more Log Properties'
 	regex = re.compile('^.*(/logrounds/logdef/[0-9]+/)edit')
@@ -273,11 +382,14 @@ def edit_logdef(request, logdef_id):
 	context = {'form': form, 'h1' : h1, 'redir' : redir}
 	return render(request, 'logrounds/edit_logdef.html', context)
 
-
+@login_required
 def add_period(request): 
 	h1 = ' Welcome to Period Creation, please fill out this form'
-		
-	redir=get_next(request)
+	req = request.get_full_path()
+	regex = re.compile('^.*\?next=(/.*)')
+	match = regex.match(req)
+	# STRIGN SANITIZATION NEEDED, TESTING ONLY
+	redir=match.group(1)
 	if request.method == "POST":
 		form = PeriodForm(request.POST)
 		if(form.is_valid()):
@@ -294,7 +406,7 @@ def add_period(request):
 	} 
 	return render(request, 'logrounds/add_period.html', context)
 
-
+@login_required
 def create_entry(request, round_id, ld_id, ls_id):
 	h1 = ' Welcome to Data Entry, please fill out this form'
 	h2 = ''
@@ -348,6 +460,7 @@ def create_entry(request, round_id, ld_id, ls_id):
 	} 
 	return render(request, 'logrounds/logentry_form_create.html', context)
 
+
 class LogEntryDetailView(DetailView):
 	model = LogEntry
 
@@ -356,7 +469,7 @@ class LogEntryDetailView(DetailView):
 		context['now'] = timezone.now()
 		return context
 
-
+@login_required
 def entry_update(request, round_id, ld_id, ls_id, parent):
 	h1 = ' Welcome to Data Entry, please fill out this form'
 	if request.method == "POST":
@@ -376,22 +489,7 @@ def entry_update(request, round_id, ld_id, ls_id, parent):
 	context = {'form': form, 'h1': h1, 'round_id' : round_id} 
 	return render(request, 'logrounds/logentry_form_create.html', context)
 
-
-
-
-
-
-
 ### custom methods
-
-def get_next(request):
-	req = request.get_full_path()
-	regex = re.compile('^.*\?next=(/.*)')
-	match = regex.match(req)
-	# STRIGN SANITIZATION NEEDED, TESTING ONLY
-	return match.group(1)
-
-#
 
 def update_logsets(get_round):
 	period = get_round.period.parse_period()
@@ -464,7 +562,10 @@ def update_logsets(get_round):
 	if (newstatus != LogSet.COMPLETE) \
 		and (newstatus != LogSet.COMPLETE_LATE):
 		# if it is considered 'missed'
-		if (curr_time <= LogSet.objects.duedate(curr_lgst)):
+		my_duedate = LogSet.objects.duedate(curr_lgst)
+		if my_duedate is None:
+			newstatus = LogSet.IN_PROGRESS
+		elif (curr_time <= my_duedate):
 			newstatus = LogSet.IN_PROGRESS
 		else:
 			newstatus = LogSet.IN_PROGRESS_LATE

@@ -1,15 +1,10 @@
-html {
-	display:block;
-	font-family: "Georgia", sans-serif;
 
-	background-color: #FCF3CF;
-	padding: 0px;
-	margin: 0px;
-}
 #header {
 	background-color: #58D68D;
 }
 body {
+	display:block;
+	background-color: #FCF3CF;
 	padding: 0px;
 	margin: 0px;
 }
@@ -19,12 +14,7 @@ body {
 	padding: 2px 5px 5px 5px;
 }
 
-#back {
-	background-color :  #58D68D;
-}
-#back:hover {
-	background-color : #FCF3CF;
-}
+
 
 .halfsize {
 	padding: 5px;
@@ -57,12 +47,12 @@ table {
 	background-color: #FCF3CF;
 	text-align: left;
 }
-
+/*
 button {
-	background-color: #FCF3CF; /* Green */
+	background-color: #FCF3CF; 
     color: black;
-    border: 2px solid black; /* Green */
-    -webkit-transition-duration: 0.4s; /* Safari */
+    border: 2px solid black; 
+    -webkit-transition-duration: 0.4s; 
     transition-duration: 0.4s;
     border-radius: 4px;
     padding: 4px;
@@ -73,8 +63,15 @@ button:hover {
 	cursor: pointer; 
 	cursor: hand;
     color: black;
-    border: 2px solid black; /* Green */
+    border: 2px solid black; 
     background-color: #ABEBC6;
     border-radius: 4px;
     padding: 4px;
 }
+#back {
+	background-color :  #58D68D;
+}
+#back:hover {
+	background-color : #FCF3CF;
+}
+*/

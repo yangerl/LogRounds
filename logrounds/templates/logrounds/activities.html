@@ -1,14 +1,17 @@
-
+{% extends 'pages/main.html' %}
 {% load staticfiles %}
-<link rel="stylesheet" type="text/css" href="{% static 'logrounds/activities.css' %}" />
-<!-- ########################################################################## -->
-<!-- ########################################################################## -->
-<!-- ########################################################################## -->
-<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
-<script src="{% static 'logrounds/clock.js' %}"></script>
-
 
 {% load app_filters %}
+
+{% block html_head %}
+{{ page.html_head|safe }}
+<link rel="stylesheet" type="text/css" href="{% static 'logrounds/generic.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'logrounds/activities.css' %}" />
+<script src="{% static 'logrounds/clock.js' %}"></script>
+{% endblock %}
+
+{% block html_body %}
+{{ page.html_body|safe }}
 <div id="header">
 <h1 style= "font-size:48px">
 	{{round.rt_name}}
@@ -18,7 +21,7 @@
 <a href="{% url 'logrounds:detail' round.id %}" style="text-decoration:none">
 <button id='back' type="button"> Back </button>
 </a>
-<br/><br/>
+<br/>
 </div>
 <br/><br/>
 
@@ -26,18 +29,21 @@
 	<h1> Period Name: {{ period }} </h1>
 	<table style='width:100%';>
 		{% with myduedate=curr_lgst.start_time|due:curr_lgst.next_time %}
+
+
 		<caption>
 			<div class='halfsize'>
 				
 				<span>
 					Due Date: {{myduedate|date:'N j, Y, H:i'}}<br/>
 					<span>
-						{{ curr_lgst.start_time|date:'N j, Y, H:i' }} to {{ curr_lgst.next_time|date:'N j, Y, H:i' }}<br/>
+						Period Start: {{ curr_lgst.start_time|date:'N j, Y, H:i' }}<br/>
+						Period End: {{ curr_lgst.next_time|date:'N j, Y, H:i' }}<br/>
 					</span>
 				</span>
 			</div>
 		</caption>
-		{% endwith %}
+		
 		<tr style="font-weight:bold">
 			<th>Attribute Name</th>
 			<th>Completed</th>
@@ -53,7 +59,6 @@
 				<td> 
 					{% with thislogtime=logentry|logtime %}
 						{{ thislogtime }}
-						
 						{% if thislogtime > myduedate %}
 							(Late)
 						{% endif %}
@@ -89,5 +94,7 @@
 			{% endif %}
 		{% endwith %}
 		{% endfor %}
+		{% endwith %}
 	</table>
 </div>
+{% endblock %}
