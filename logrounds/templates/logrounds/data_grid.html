@@ -1,18 +1,13 @@
 {% extends 'pages/main.html' %}
 {% load staticfiles %}
-
-
 {% block html_head %}
 {{ page.html_head|safe }}
-
 <link rel="stylesheet" type="text/css" href="{% static 'logrounds/generic.css' %}" />
-
 <link rel="stylesheet" href="{% static 'pages/js/jqwidgets/styles/jqx.base.css' %}" type="text/css" />
-
 <link rel="stylesheet" type="text/css" href="{% static 'logrounds/gridstyle.css' %}" />
 <script src="{% static 'pages/js/jquery.min.js' %}"></script>
-<script src="{% static 'logrounds/clock.js' %}"></script>
-<script src="{% static 'logrounds/drawgrid.js' %}"></script>
+<script src="{% static 'logrounds/js/clock.js' %}"></script>
+<script src="{% static 'logrounds/js/drawgrid.js' %}"></script>
 <script type="text/javascript" src="{% static 'pages/js/jqwidgets/jqxcore.js' %}"></script>
 <script type="text/javascript" src="{% static 'pages/js/jqwidgets/jqxbuttons.js'%}"></script>
 <script type="text/javascript" src="{% static 'pages/js/jqwidgets/jqxscrollbar.js'%}"></script>
@@ -21,27 +16,23 @@
 <script type="text/javascript" src="{% static 'pages/js/jqwidgets/jqxlistbox.js'%}"></script>
 <script type="text/javascript" src="{% static 'pages/js/jqwidgets/jqxdata.js'%}"></script>
 <script type="text/javascript" src="{% static 'pages/js/jqwidgets/jqxdropdownlist.js' %}"></script>
-
 <script type="text/javascript" src="{% static 'pages/js/jqwidgets/jqxgrid.pager.js'%}"></script>
 <script type="text/javascript" src="{% static 'pages/js/jqwidgets/jqxgrid.selection.js' %}"></script>
 <script type="text/javascript" src="{% static 'pages/js/jqwidgets/jqxgrid.columnsresize.js' %}"></script>
 {% endblock %}
-
 {% block html_body %}
 {{ page.html_body|safe }}
 <div id='header'>
-<h1> Logged Data for {{ round }} since {{ start }}</h1>
-<h2> Current Server Time: <span id='universal'></span> </h2>
-<a href="{% url 'logrounds:detail' round.id %}" style="text-decoration:none">
-<button id='back' type="button"> Back </button></a>
+    <h1> Logged Data for {{ round }} since {{ start }}</h1>
+    <h2> Current Server Time: <span id='universal'></span> </h2>
+    <a href="{% url 'logrounds:detail' round.id %}" style="text-decoration:none">
+    <button id='back' type="button"> Back </button></a>
 </div>
-
 <br/>
 <div id="jqxgrid"></div>
 <br/> 
 <button id="button">Restore Default Spacing</button>
 <script>
-	createGraphs({{json}},{{logdefs}})
+    createGraphs({{json}},{{logdefs}})
 </script>
-
 {% endblock %}

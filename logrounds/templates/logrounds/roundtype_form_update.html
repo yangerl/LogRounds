@@ -1,22 +1,17 @@
 {% extends 'pages/main.html' %}
 {% load staticfiles %}
-
 {% block html_head %}
 {{ page.html_head|safe }}
 <link rel="stylesheet" type="text/css" href="{% static 'logrounds/generic.css' %}" />
-
 {% endblock %}
-
 {% block html_body %}
 {{ page.html_body|safe }}
 <div id='header'>
-<h1> Welcome to Round Update, please fill out this form </h1>
+    <h1> Welcome to Round Update, please fill out this form </h1>
 </div>
 <form method="POST" role="form"> {% csrf_token %}
-	{{ form.as_p}}
-	<button type="submit"> Submit </button>
-
-	<a href="{{request.META.HTTP_REFERER}}"> <button >Cancel</button></a>
-</form>	
+    {{ form.as_p}}
+    <button type="submit"> Submit </button>
+    <a href="{{request.META.HTTP_REFERER}}"> <button >Cancel</button></a>
+</form>
 {% endblock %}
-

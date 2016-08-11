@@ -1,22 +1,23 @@
 {% extends 'pages/main.html' %}
 {% load staticfiles %}
-
-
 {% block html_head %}
 {{ page.html_head|safe }}
 <link rel="stylesheet" type="text/css" href="{% static 'logrounds/generic.css' %}" />
+<link rel="stylesheet" href="{% static 'pages/js/jqwidgets/styles/jqx.base.css' %}" type="text/css" />
+<script type="text/javascript" src="{% static 'pages/js/jqwidgets/jqxcore.js' %}"></script>
+<script type="text/javascript" src="{% static 'pages/js/jqwidgets/jqxtooltip.js' %}"</script>
+<script type="text/javascript" src="{% static 'pages/js/jquery.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'logrounds/js/logdef_create_tooltips.js' %}"></script>
 {% endblock %}
-
 {% block html_body %}
 {{ page.html_body|safe }}
-
-<h1> {{ h1 }} </h1>
+<h1> 'Edit one of more Log Properties' </h1>
 <form method="POST" role="form">
-	{% csrf_token %}
-	{{ form.as_p }}
-	<button type="submit"> Submit </button> 
-	<!-- <button formaction= "{% url 'logrounds:new_period' %}?next={{request.path|urlencode}}">Add New Period</button>
-		-->
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit"> Submit </button> 
+    <!-- <button formaction= "{% url 'logrounds:new_period' %}?next={{request.path|urlencode}}">Add New Period</button>
+        -->
 </form>
 <a href="{% url 'logrounds:new_period' %}?next={{request.path|urlencode}}" style="text-decoration: none">
 <button> Add New Period</button>
@@ -26,5 +27,3 @@
 <button> Cancel</button>
 </a>
 {% endblock %}
-
-

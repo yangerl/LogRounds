@@ -1,57 +1,49 @@
 {% extends 'pages/main.html' %}
 {% load staticfiles %}
-
 {% load app_filters %}
-
 {% block html_head %}
 {{ page.html_head|safe }}
 <link rel="stylesheet" type="text/css" href="{% static 'logrounds/generic.css' %}" />
 <link rel="stylesheet" type="text/css" href="{% static 'logrounds/index.css' %}" />
 <script src="{% static 'pages/js/jquery.min.js' %}"></script>
-<script src="{% static 'logrounds/clock.js' %}"></script>
+<script src="{% static 'logrounds/js/clock.js' %}"></script>
 {% endblock %}
-
 {% block html_body %}
 {{ page.html_body|safe }}
 <div id='header'>
-<h1> Index of Rounds	</h1>
-<h2> Click to View Details <br/><br/> Server Time: <span id='universal'></span> </h2>
-<a href="{% url 'logrounds:create' %}">
-	<button> Create New Round (only allow admin to access this page) </button>
-</a>
+    <h1> Index of Rounds    </h1>
+    <h2> Click to View Details <br/><br/> Server Time: <span id='universal'></span> </h2>
+    <a href="{% url 'logrounds:create' %}">
+    <button> Create New Round (only allow admin to access this page) </button>
+    </a>
 </div>
 {% if rounds_list and dd_list %}
-	<table>
-		<tr>
-			<th> Round Name </th>
-			<th> Next Due Date </th>
-		</tr>
-		{% for duedate in dd_list %}
-		
-		{% with curr_rounds=dict|lookup:duedate %}
-		{% for curr_round in curr_rounds %}
-			<tr>
-				<td> <a href="{% url 'logrounds:detail' curr_round.id %}">{{ curr_round.rt_name }}</a></td>
-				<td> 
-					{% if duedate == max %}
-						No LogDefs Created Yet! No Action Required
-					{% else %}
-						{{ duedate|date:'N j, Y, H:i' }} 
-					{% endif %}
-					
-				</td>
-			</tr>	
-		{% endfor %}
-		{% endwith %}
-		
-		{% endfor %}
-	</table>
-
+<table>
+    <tr>
+        <th> Round Name </th>
+        <th> Next Due Date </th>
+    </tr>
+    {% for duedate in dd_list %}
+    {% with curr_rounds=dict|lookup:duedate %}
+    {% for curr_round in curr_rounds %}
+    <tr>
+        <td> <a href="{% url 'logrounds:detail' curr_round.id %}">{{ curr_round.rt_name }}</a></td>
+        <td> 
+            {% if duedate == max %}
+            No LogDefs Created Yet! No Action Required
+            {% else %}
+            {{ duedate|date:'N j, Y, H:i' }} 
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+    {% endwith %}
+    {% endfor %}
+</table>
 {% else %}
-    <p> No Rounds Created Yet </p>
+<p> No Rounds Created Yet </p>
 {% endif %}
-
 <a href="{%url 'logrounds:index' %}">
-	<button> Home </button>
+<button> Home </button>
 </a>
 {% endblock %}

@@ -1,7 +1,5 @@
 {% extends 'pages/main.html' %}
 {% load staticfiles %}
-
-
 {% block html_head %}
 {{ page.html_head|safe }}
 <link rel="stylesheet" type="text/css" href="{% static 'logrounds/generic.css' %}" />
@@ -9,140 +7,128 @@
 <link rel="stylesheet" type="text/css" href="{% static 'logrounds/wickedpicker-master/stylesheets/wickedpicker.css' %}">
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.0/themes/base/jquery-ui.css">
 <script src="{% static 'pages/js/jquery.min.js' %}"></script>
-<script src="{% static 'logrounds/clock.js' %}"></script>
+<script src="{% static 'logrounds/js/clock.js' %}"></script>
 <script src="https://code.jquery.com/ui/1.12.0/jquery-ui.js"></script>
 <script type="text/javascript" src="{% static 'logrounds/wickedpicker-master/src/wickedpicker.js' %}"></script>
-
 <script>
-   $(function() {
-      $( "#id_start_date" ).datepicker();
-   });
-   $(function() {
-       var options = {
-      
-        twentyFour: true,  //Display 24 hour format, defaults to false
-        upArrow: 'wickedpicker__controls__control-up',  //The up arrow class selector to use, for custom CSS
-        downArrow: 'wickedpicker__controls__control-down', //The down arrow class selector to use, for custom CSS
-        close: 'wickedpicker__close', //The close class selector to use, for custom CSS
-        hoverState: 'hover-state', //The hover state class to use, for custom CSS
-        title: '24-Hour Time', //The Wickedpicker's title,
-        showSeconds: false, //Whether or not to show seconds,
-        secondsInterval: 1, //Change interval for seconds, defaults to 1,
-        minutesInterval: 1, //Change interval for minutes, defaults to 1
-        beforeShow: null, //A function to be called before the Wickedpicker is shown
-        show: null, //A function to be called when the Wickedpicker is shown
-        clearable: false, //Make the picker's input clearable (has clickable "x")
-    };
-      $('#id_start_time').wickedpicker(options);
-   });
-</script>
-{% endblock %}
+  $(function() {
+   $( "#id_start_date" ).datepicker();
+ });
+  $(function() {
+    var options = {
 
-{% block html_body %}
-{{ page.html_body|safe }}
-
-<div id='header'>
-      <h1> {{ round.rt_name }} <br/>
-         Server Time: <span id='universal'></span>  
-      </h1>
-      <a href="{% url 'logrounds:index' %}"> 
-      <button> Home </button>
-      </a>
+       twentyFour: true,  //Display 24 hour format, defaults to false
+       upArrow: 'wickedpicker__controls__control-up',  //The up arrow class selector to use, for custom CSS
+       downArrow: 'wickedpicker__controls__control-down', //The down arrow class selector to use, for custom CSS
+       close: 'wickedpicker__close', //The close class selector to use, for custom CSS
+       hoverState: 'hover-state', //The hover state class to use, for custom CSS
+       title: '24-Hour Time', //The Wickedpicker's title,
+       showSeconds: false, //Whether or not to show seconds,
+       secondsInterval: 1, //Change interval for seconds, defaults to 1,
+       minutesInterval: 1, //Change interval for minutes, defaults to 1
+       beforeShow: null, //A function to be called before the Wickedpicker is shown
+       show: null, //A function to be called when the Wickedpicker is shown
+       clearable: false, //Make the picker's input clearable (has clickable "x")
+     };
+     $('#id_start_time').wickedpicker(options);
+   });
+ </script>
+ {% endblock %}
+ {% block html_body %}
+ {{ page.html_body|safe }}
+ <div id='header'>
+  <h1> {{ round.rt_name }} <br/>
+    Server Time: <span id='universal'></span>  
+  </h1>
+  <a href="{% url 'logrounds:index' %}"> 
+    <button> Home </button>
+  </a>
 </div>
-
 <div id='bod'>
-   <div>
-         <h2> Round Details </h2>
-         <table>
+  <div>
+    <h2> Round Details </h2>
+    <table>
+      <tr>
+        <td style='font-weight: bold;'> Description: </td>
+        <td> {{round.rt_desc}} </td>
+      </tr>
+      <tr>
+        <td style='font-weight: bold;'> Round Start Date: </td>
+        <td> {{start_date|date:'N j, Y, H:i'}} </td>
+      </tr>
+      <tr>
+        <td style='font-weight: bold;'>Phase: </td>
+        <td>
+          <table>
             <tr>
-               <td style='font-weight: bold;'> Description: </td>
-               <td> {{round.rt_desc}} </td>
-            </tr>
-            <tr>
-               <td style='font-weight: bold;'> Round Start Date: </td>
-               <td> {{start_date|date:'N j, Y, H:i'}} </td>
-            </tr>
-         </table>
-         <h3> Period Details</h3>
-         <table>
-            <tr>
-               <td style='font-weight: bold;'> Name: </td>
-               <td>{{ period.name }}</td>
-            </tr>
-            <tr>
-               <td style='font-weight: bold;'> Periodicity: </td>
-               <td>{{ period.scale }} {{ period.unit }}</td>
-            </tr>
-            <tr>
-               <td style='font-weight: bold;'>Phase: </td>
-               <td>
-                  <table>
-                     <tr>
-                        <td> Days:</td>
-                        <td> {{period.phase_days}}
-                     </tr>
-                     <tr>
-                        <td> Hours: </td>
-                        <td> {{period.phase_hours}} </td>
-                     </tr>
-                     <tr>
-                        <td> Minutes: </td>
-                        <td> {{period.phase_min}} </td>
-                     </tr>
-                  </table>
-               </td>
-            </tr>
-         </table>
-         <br/> 
+              <td> Days:</td>
+              <td> {{round.phase_days}}
+              </tr>
+              <tr>
+                <td> Hours: </td>
+                <td> {{round.phase_hours}} </td>
+              </tr>
+              <tr>
+                <td> Minutes: </td>
+                <td> {{round.phase_min}} </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+      <h3> Period Details</h3>
+      <table>
+        <tr>
+          <td style='font-weight: bold;'> Name: </td>
+          <td>{{ period.name }}</td>
+        </tr>
+        <tr>
+          <td style='font-weight: bold;'> Periodicity: </td>
+          <td>{{ period.scale }} {{ period.unit }}</td>
+        </tr>
+
+      </table>
+      <br/> 
       <a href="{% url 'logrounds:update_round' round.id %}"> 
-      <button type="button"> Edit </button>
+        <button type="button"> Edit </button>
       </a>
       <a href="{% url 'logrounds:remove_round' round.id %}"> 
-      <button type="button" > Remove </button>
+        <button type="button" > Remove </button>
       </a>
-   </div>
-   <div>
+    </div>
+    <div>
       <h2> Log Attributes </h2>
       {% if logdef_qs %}
       <ul>
-         {% for logdef in logdef_qs %}
-         <li>
-            <a href="{% url 'logrounds:logdef_detail' logdef.id %}"> 
+        {% for logdef in logdef_qs %}
+        <li>
+          <a href="{% url 'logrounds:logdef_detail' logdef.id %}"> 
             {{ logdef.name }}
-            </a>  
-         </li>
-         {% endfor %}
+          </a>  
+        </li>
+        {% endfor %}
       </ul>
       {% else %}
       <p> No LogDefs </p>
       {% endif %}
-
-         <a href="{% url 'logrounds:new_logdef' round.id %}"> 
-         <button type="button"> Add New Attributes </button>
-         </a>
-
-   </div>
-   <div>
-      <h2> Create and Enter a Set of Data </h2>
-
-         <a href="{% url 'logrounds:activities' round.id %}"> 
-         <button type="button"> Create New LogSet </button>
-         </a>
-
-   </div>
-   <div>
+      <a href="{% url 'logrounds:new_logdef' round.id %}"> 
+        <button type="button"> Add New Attributes </button>
+      </a>
+    </div>
+    <div>
+    <h2> View or Enter a Set of Data </h2>
+      <a href="{% url 'logrounds:activities' round.id %}"> 
+        <button type="button"> Create New LogSet </button>
+      </a>
+    </div>
+    <div>
       <h2> View Recently Logged Data Sets </h2>
       <div>
-         <form method="POST" role="form"> {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit"> Submit </button> 
-         </form>
+        <form method="POST" role="form"> {% csrf_token %}
+          {{ form.as_p }}
+          <button type="submit"> Submit </button> 
+        </form>
       </div>
-   </div>
-</div>
-{% endblock %}
-
-
-
-
-
+    </div>
+  </div>
+  {% endblock %}

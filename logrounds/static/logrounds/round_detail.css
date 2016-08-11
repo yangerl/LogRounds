@@ -1,33 +1,33 @@
 
 .container {
-	display: inline-block;
-	background-color:#58D68D;
-	padding: 5px;
+    display: inline-block;
+    background-color:#58D68D;
+    padding: 5px;
 }
 .container h1 {
-	margin: 5px;
+    margin: 5px;
 }
 caption {
-	background-color:#82E0AA;
-	text-align :left;
+    background-color:#82E0AA;
+    text-align :left;
 }
 
 #bod{
-	width: 100%;
-	display: table;
-	padding:0;
-	margin: 3% auto;
-	background-color: #FCF3CF;
-	text-align: left;
+    width: 100%;
+    display: table;
+    padding:0;
+    margin: 3% auto;
+    background-color: #FCF3CF;
+    text-align: left;
 }
 
 #bod div h2{
-	padding: 4px;
-	background-color: #58D68D;
+    padding: 4px;
+    background-color: #58D68D;
 }
 
 #bod div {
-	padding-bottom: 20px;
-	background-color: #82E0AA;
+    padding-bottom: 20px;
+    background-color: #82E0AA;
 
 }

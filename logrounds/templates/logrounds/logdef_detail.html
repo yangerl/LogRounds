@@ -1,44 +1,58 @@
-
 {% extends 'pages/main.html' %}
 {% load staticfiles %}
-
-
 {% block html_head %}
 {{ page.html_head|safe }}
 <link rel="stylesheet" type="text/css" href="{% static 'logrounds/generic.css' %}" />
 <link rel="stylesheet" type="text/css" href="{% static 'logrounds/round_detail.css' %}" />
 {% endblock %}
-
 {% block html_body %}
 {{ page.html_body|safe }}
 <div id='header'>
-<div class='container'>
-<h1>{{round.rt_name}}</h1></div>
-
+    <div class='container'>
+        <h1>{{round.rt_name}}</h1>
+    </div>
 </div>
-<div id='bod' style='text-align: center;'><div>
-<h2>{{ dict.name }}
-<br/>
-			<a href="{% url 'logrounds:edit_logdef' lgdf.id %}" >
-				<button type="button"> Edit Values </button>
-			</a>
-			<a href="{% url 'logrounds:remove_logdef' lgdf.id %}"> 
-<button type="button" > Remove </button>
-</a>
-			<a href="{% url 'logrounds:detail' round.id %}">
-				<button type="button"> Back </button>
-			</a>
-			<br/> </h2>
-<table style="display: table; margin: 0 auto; font-size:16pt">
-	<tr style="font-weight:bold"><td>Field</td><td>Value</td></tr>
-	<tr><td>Description</td><td>{{dict.desc}}</td></tr>
-	<tr><td>Is Data Qualatative?</td><td>{{dict.is_qual_data}}</td></tr>
-	<tr><td>Units</td><td>{{dict.units}}</td></tr>
-	<tr><td>Expected Range</td><td>{{dict.low}} to {{dict.high}}</td></tr>
-	<tr><td>Absolute Range</td><td>{{dict.low_low}} to {{dict.high_high}}</td></tr>
-</table>
-
-</div>
+<div id='bod' style='text-align: center;'>
+    <div>
+        <h2>{{ lgdf.name }}
+            <br/>
+            <a href="{% url 'logrounds:edit_logdef' lgdf.id %}" >
+            <button type="button"> Edit Values </button>
+            </a>
+            <a href="{% url 'logrounds:remove_logdef' lgdf.id %}"> 
+            <button type="button" > Remove </button>
+            </a>
+            <a href="{% url 'logrounds:detail' round.id %}">
+            <button type="button"> Back </button>
+            </a>
+            <br/> 
+        </h2>
+        <table style="display: table; margin: 0 auto; font-size:16pt">
+            <tr style="font-weight:bold">
+                <td>Field</td>
+                <td>Value</td>
+            </tr>
+            <tr>
+                <td>Description</td>
+                <td>{{lgdf.desc}}</td>
+            </tr>
+            <tr>
+                <td>Is Data Qualatative?</td>
+                <td>{{lgdf.is_qual_data}}</td>
+            </tr>
+            <tr>
+                <td>Units</td>
+                <td>{{lgdf.units}}</td>
+            </tr>
+            <tr>
+                <td>Expected Range</td>
+                <td>{{lgdf.low}} to {{lgdf.high}}</td>
+            </tr>
+            <tr>
+                <td>Absolute Range</td>
+                <td>{{lgdf.low_low}} to {{lgdf.high_high}}</td>
+            </tr>
+        </table>
+    </div>
 </div>
 {% endblock %}
-

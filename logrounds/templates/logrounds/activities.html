@@ -1,100 +1,87 @@
 {% extends 'pages/main.html' %}
 {% load staticfiles %}
-
 {% load app_filters %}
-
 {% block html_head %}
 {{ page.html_head|safe }}
 <link rel="stylesheet" type="text/css" href="{% static 'logrounds/generic.css' %}" />
 <link rel="stylesheet" type="text/css" href="{% static 'logrounds/activities.css' %}" />
-<script src="{% static 'logrounds/clock.js' %}"></script>
+<script src="{% static 'logrounds/js/clock.js' %}"></script>
 {% endblock %}
-
 {% block html_body %}
 {{ page.html_body|safe }}
 <div id="header">
-<h1 style= "font-size:48px">
-	{{round.rt_name}}
-	<br/>
-	Server Time: <span id='universal'></span>	
-</h1>
-<a href="{% url 'logrounds:detail' round.id %}" style="text-decoration:none">
-<button id='back' type="button"> Back </button>
-</a>
-<br/>
+    <h1 style= "font-size:48px">
+        {{round.rt_name}}
+        <br/>
+        Server Time: <span id='universal'></span>   
+    </h1>
+    <a href="{% url 'logrounds:detail' round.id %}" style="text-decoration:none">
+    <button id='back' type="button"> Back </button>
+    </a>
+    <br/>
 </div>
 <br/><br/>
-
 <div class='container'>
-	<h1> Period Name: {{ period }} </h1>
-	<table style='width:100%';>
-		{% with myduedate=curr_lgst.start_time|due:curr_lgst.next_time %}
-
-
-		<caption>
-			<div class='halfsize'>
-				
-				<span>
-					Due Date: {{myduedate|date:'N j, Y, H:i'}}<br/>
-					<span>
-						Period Start: {{ curr_lgst.start_time|date:'N j, Y, H:i' }}<br/>
-						Period End: {{ curr_lgst.next_time|date:'N j, Y, H:i' }}<br/>
-					</span>
-				</span>
-			</div>
-		</caption>
-		
-		<tr style="font-weight:bold">
-			<th>Attribute Name</th>
-			<th>Completed</th>
-			<th>Create Entry</th>
-			<th>View Entry</th>
-			<th>Update Entry</th>
-		</tr>
-		{% for logdef in logdef_qs %}
-		<tr>
-		<td> {{logdef}} </td>
-		{% with logentry=lgdf_lgentry|lookup:logdef %}
-				{% if logentry != None %}
-				<td> 
-					{% with thislogtime=logentry|logtime %}
-						{{ thislogtime }}
-						{% if thislogtime > myduedate %}
-							(Late)
-						{% endif %}
-					
-					{% endwith %}
-				</td>
-
-				<td> Entry Already Created </td>
-								<td>
-					<a href="{% url 'logrounds:entry_details' round.id logdef.id curr_lgst.id logentry.id %}" style="text-decoration:none"> 
-					<button> View </button> 
-					</a>
-				</td>
-				<td> <a href="{% url 'logrounds:entry_update' round.id logdef.id curr_lgst.id logentry.id %}" style="text-decoration:none">
-				<button> Update (close this once the window is closed) </button> </a>
-				 </td>
-
-			{% else %}
-				
-				{% if time > myduedate %}
-					<td> Not Started (Late) </td>
-				{% else %}
-					<td> Not Started</td>
-				{% endif %}
-				
-				<td> 
-				<a href="{% url 'logrounds:create_entry' round.id logdef.id curr_lgst.id %}?next={{round.id}}">
-				<button> Create Now </button> </a>
-				</td>
-				<td> No Entry to View </td>
-				<td> No Entry to Update </td>
-				</tr>
-			{% endif %}
-		{% endwith %}
-		{% endfor %}
-		{% endwith %}
-	</table>
+    <h1> Period Name: {{ period }} </h1>
+    <table style='width:100%';>
+        {% with myduedate=curr_lgst.start_time|due:curr_lgst.next_time %}
+        <caption>
+            <div class='halfsize'>
+                <span>
+                Due Date: {{myduedate|date:'N j, Y, H:i'}}<br/>
+                <span>
+                Period Start: {{ curr_lgst.start_time|date:'N j, Y, H:i' }}<br/>
+                Period End: {{ curr_lgst.next_time|date:'N j, Y, H:i' }}<br/>
+                </span>
+                </span>
+            </div>
+        </caption>
+        <tr style="font-weight:bold">
+            <th>Attribute Name</th>
+            <th>Completed</th>
+            <th>Create Entry</th>
+            <th>View Entry</th>
+            <th>Update Entry</th>
+        </tr>
+        {% for logdef in logdef_qs %}
+        <tr>
+            <td> {{logdef}} </td>
+            {% with logentry=lgdf_lgentry|lookup:logdef %}
+            {% if logentry != None %}
+            <td> 
+                {% with thislogtime=logentry|logtime %}
+                {{ thislogtime }}
+                {% if thislogtime > myduedate %}
+                (Late)
+                {% endif %}
+                {% endwith %}
+            </td>
+            <td> Entry Already Created </td>
+            <td>
+                <a href="{% url 'logrounds:entry_details' round.id logdef.id curr_lgst.id logentry.id %}" style="text-decoration:none"> 
+                <button> View </button> 
+                </a>
+            </td>
+            <td> <a href="{% url 'logrounds:entry_update' round.id logdef.id curr_lgst.id logentry.id %}" style="text-decoration:none">
+                <button> Update (close this once the window is closed) </button> </a>
+            </td>
+            {% else %}
+            {% if time > myduedate %}
+            <td> Not Started (Late) </td>
+            {% else %}
+            <td> Not Started</td>
+            {% endif %}
+            <td> 
+                <a href="{% url 'logrounds:create_entry' round.id logdef.id curr_lgst.id %}?next={{round.id}}">
+                <button> Create Now </button> </a>
+            </td>
+            <td> No Entry to View </td>
+            <td> No Entry to Update </td>
+        </tr>
+        {% endif %}
+        {% endwith %}
+        {% endfor %}
+        {% endwith %}
+    </table>
 </div>
 {% endblock %}

@@ -1,55 +1,47 @@
 
 #header {
-	background-color: #58D68D;
+    background-color: #58D68D;
 }
-body {
-	display:block;
-	background-color: #FCF3CF;
-	padding: 0px;
-	margin: 0px;
-}
-
-
 #head {
-	padding: 2px 5px 5px 5px;
+    padding: 2px 5px 5px 5px;
 }
 
 
 
 .halfsize {
-	padding: 5px;
-	width: 61.81%;
-	background-color:#ABEBC6  ;
-	font-weight:bold; 
-	font-size:24pt;
+    padding: 5px;
+    width: 61.81%;
+    background-color:#ABEBC6  ;
+    font-weight:bold; 
+    font-size:24pt;
 }
 .halfsize span {
-	font-size:18pt;
+    font-size:18pt;
 }
 .halfsize span span{
-	font-size:14pt;
+    font-size:14pt;
 }
 .container {
-	background-color:#58D68D;
-	padding-top: 1px;
+    background-color:#58D68D;
+    padding-top: 1px;
 }
 .container h1 {
-	margin: 5px;
+    margin: 5px;
 }
 
 caption {
-	background-color:#82E0AA;
-	text-align :left;
+    background-color:#82E0AA;
+    text-align :left;
 }
 
 table {
-	margin: 0px;
-	background-color: #FCF3CF;
-	text-align: left;
+    margin: 0px;
+    background-color: #FCF3CF;
+    text-align: left;
 }
 /*
 button {
-	background-color: #FCF3CF; 
+    background-color: #FCF3CF; 
     color: black;
     border: 2px solid black; 
     -webkit-transition-duration: 0.4s; 
@@ -60,8 +52,8 @@ button {
 }
 
 button:hover {
-	cursor: pointer; 
-	cursor: hand;
+    cursor: pointer; 
+    cursor: hand;
     color: black;
     border: 2px solid black; 
     background-color: #ABEBC6;
@@ -69,9 +61,9 @@ button:hover {
     padding: 4px;
 }
 #back {
-	background-color :  #58D68D;
+    background-color :  #58D68D;
 }
 #back:hover {
-	background-color : #FCF3CF;
+    background-color : #FCF3CF;
 }
 */
