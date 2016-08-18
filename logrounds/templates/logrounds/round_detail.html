@@ -31,13 +31,13 @@
        clearable: false, //Make the picker's input clearable (has clickable "x")
      };
      $('#id_start_time').wickedpicker(options);
-   });
- </script>
- {% endblock %}
- {% block html_body %}
- {{ page.html_body|safe }}
- <div id='header'>
-  <h1> {{ round.rt_name }} <br/>
+  });
+</script>
+{% endblock %}
+{% block html_body %}
+{{ page.html_body|safe }}
+<div id='header'>
+  <h1> {{ round.name }} <br/>
     Server Time: <span id='universal'></span>  
   </h1>
   <a href="{% url 'logrounds:index' %}"> 
@@ -50,7 +50,7 @@
     <table>
       <tr>
         <td style='font-weight: bold;'> Description: </td>
-        <td> {{round.rt_desc}} </td>
+        <td> {{round.desc}} </td>
       </tr>
       <tr>
         <td style='font-weight: bold;'> Round Start Date: </td>

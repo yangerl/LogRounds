@@ -1,4 +1,4 @@
-from django.shortcuts import get_object_or_404, render, redirect 
+from django.shortcuts import get_object_or_404, render, redirect
 
 # Create your views here.
 import json
@@ -30,7 +30,7 @@ def index(request):
         this_logset = update_logsets(rounds)
 
         # The current duedate for the given round in the list
-        this_due_date = LogSet.objects.duedate(this_logset)
+        this_due_date = this_logset.duedate()
 
         # If there is no due date for whatever reason set it to
         # maxtime, which will be handled in the template
@@ -72,9 +72,10 @@ def round_detail(request, round_id):
 
     # if POST request, deal with the form
     if request.method == "POST":
-        # next two lines are a fix for wickedpicker time picker which adds spaces
-        # thus making the start_time field invalid. Create a mutable version of request
-        # then modify the start_time field so that the form field is valid
+        # next two lines are a fix for wickedpicker time picker which adds
+        # spaces thus making the start_time field invalid. Create a mutable 
+        # version of request then modify the start_time field so that the 
+        # form field is valid
         new_post = request.POST.copy()
         new_post['start_time'] = request.POST['start_time'].replace(" ","")
 
@@ -83,15 +84,17 @@ def round_detail(request, round_id):
         
         if(form.is_valid()):
             # create datetime for the modelfield
-            start_datetime = datetime.combine(
+            start_datetime = timezone.make_aware(datetime.combine(
                 form.cleaned_data['start_date'], 
                 form.cleaned_data['start_time']
-            )
+            ))
             return redirect('logrounds:data_grid', round_id, start_datetime)
-    # if it is not a POST request, use an empty form with init startdate as round start_date
+    # if it is not a POST request, use an empty form with init startdate 
+    # as round start_date
     else:
         form = DataGridForm()
-        form.fields['start_date'].initial = get_round.start_date.strftime("%m/%d/%Y")
+        form.fields['start_date'].initial = \
+            get_round.start_date.strftime("%m/%d/%Y")
     
     context = { 
         'round' : get_round,
@@ -109,12 +112,14 @@ class RoundCreate(CreateView):
     form_class = RoundTypeForm
 
     def get_success_url(self):
-        return reverse_lazy('logrounds:new_logdef',kwargs={'round_id':self.object.id})
+        return reverse_lazy('logrounds:new_logdef',
+            kwargs={'round_id':self.object.id})
 
 class RoundUpdate(UpdateView):
     template_name_suffix = '_form_update'
     model = RoundType
-    fields = ['rt_name', 'period', 'rt_desc']
+    fields = ['name', 'period', 'desc']
+
 
 class RoundDelete(DeleteView):
     model = RoundType
@@ -189,11 +194,8 @@ def data_grid(request, round_id, start_time):
     logdef_name = []
     for lgdf in logdef_qs:
             logdef_name.append(lgdf.name)
-
-
     # starting rowID
     id = 0
-
     #for each logset in the queryset create a row for the grid
     for lgst in logset_qs:
         row_obj = {}
@@ -217,7 +219,8 @@ def data_grid(request, round_id, start_time):
                 if lgdf.is_qual_data:
                     row_obj[lgdf.name] = curr_entry.select_value
                 else:
-                    row_obj[lgdf.name] = str(curr_entry.num_value) +' '+ lgdf.units
+                    row_obj[lgdf.name] = \
+                        str(curr_entry.num_value) +' '+ lgdf.units
 
             else:
                 row_obj[lgdf.name] = 'Entry Does Not Exist'
@@ -238,31 +241,32 @@ def data_grid(request, round_id, start_time):
     } 
 
     return render(request, 'logrounds/data_grid.html', context)
-
 class LogDefCreate(CreateView):
 
     template_name_suffix = '_form_create'
     model = LogDef
-    fields = ['rt','period','name','desc','is_qual_data',
+    fields = ['rt','name','desc','is_qual_data',
                 'units','low_low','high_high','low','high']
 
     def get_success_url(self):
-       return reverse_lazy('logrounds:new_logdef')+'?next='+str(self.object.rt.id)
+        return reverse_lazy('logrounds:new_logdef')\
+            + '?next='+str(self.object.rt.id)
 
 @login_required
 def create_logdef(request, round_id):
     this_round = get_object_or_404(RoundType, pk=round_id)
     if request.method == "POST":
         form = LogDefForm(request.POST)
+
         if(form.is_valid()):
             post = form.save()
             # add message notifying user of successful creation
-            messages.add_message(request, messages.INFO, 'Successfully Created Log Attribute')  
+            messages.add_message(request, 
+                messages.INFO, 'Successfully Created Log Attribute')  
+
             return redirect('logrounds:new_logdef', round_id)           
     else:
-        form = LogDefForm(initial={
-            'rt': this_round
-        })
+        form = LogDefForm(initial={'rt': this_round })
 
     context = {
         'form': form,
@@ -273,8 +277,9 @@ def create_logdef(request, round_id):
 class LogDefDelete(DeleteView):
     model = LogDef
     def get_success_url(self):
-        return reverse_lazy('logrounds:detail',kwargs={'round_id':self.object.rt.id})
- 
+        return reverse_lazy('logrounds:detail',
+            kwargs={'round_id':self.object.rt.id})
+
 @login_required
 def logdef_detail(request, logdef_id):
     # Queryset of the LogDef needed
@@ -289,7 +294,6 @@ def edit_logdef(request, logdef_id):
     # compile regex to work with next, probably is better way to do it...
     regex = re.compile('^.*(/logrounds/logdef/[0-9]+/)edit')
     redir = regex.match(request.path).group(1)
-
     instance = LogDef.objects.get(pk=logdef_id)
     if request.method == "POST":
         form = LogDefForm(request.POST, instance=instance)
@@ -346,7 +350,8 @@ def create_entry(request, round_id, ld_id, ls_id):
                 newPost['log_time'] = timezone.now()
                 form = LogEntryForm(newPost)
 
-                messages.add_message(request, messages.INFO, 'Must enter value within absolute bounds') 
+                messages.add_message(request, messages.INFO, 
+                    'Must enter value within absolute bounds') 
                 context = {
                     'form': form, 
                     'logdef': logdef,
@@ -374,7 +379,6 @@ def create_entry(request, round_id, ld_id, ls_id):
     } 
     return render(request, 'logrounds/logentry_form_create.html', context)
 
-
 class LogEntryDetailView(DetailView):
     model = LogEntry
     def get_context_data(self, **kwargs):
@@ -399,7 +403,6 @@ def entry_update(request, round_id, ld_id, ls_id, parent):
         })
     context = {'form': form, 'h1': h1, 'round_id' : round_id} 
     return render(request, 'logrounds/logentry_form_create.html', context)
-
 ### custom methods
 
 def update_logsets(get_round):
@@ -440,8 +443,8 @@ def update_logsets(get_round):
             or (curr_lgst.status == LogSet.IN_PROGRESS_LATE):
             # if it is one of these 3 statuses, it must be updated!
             # 3 lines to update status
-            curr_lgst.log_time = LogSet.objects.latest_logtime(curr_lgst)
-            curr_lgst.status = LogSet.objects.status_update(curr_lgst, logdef_qs)
+            curr_lgst.log_time = curr_lgst.latest_logtime()
+            curr_lgst.status = curr_lgst.status_update(logdef_qs)
             curr_lgst.save()
 
             # 2 lines to create next 'curr_lgst' in iteration
@@ -468,19 +471,19 @@ def update_logsets(get_round):
         # This can only be complete/complete(late)/inprogress/inprogress(late)
         # because we know that the curr_time < curr_lgst.next_time
 
-    newstatus =LogSet.objects.status_update(curr_lgst,logdef_qs)
+    newstatus = curr_lgst.status_update(logdef_qs)
 
     if (newstatus != LogSet.COMPLETE) \
         and (newstatus != LogSet.COMPLETE_LATE):
         # if it is considered 'missed'
-        my_duedate = LogSet.objects.duedate(curr_lgst)
+        my_duedate = curr_lgst.duedate()
         if my_duedate is None:
             newstatus = LogSet.IN_PROGRESS
         elif (curr_time <= my_duedate):
             newstatus = LogSet.IN_PROGRESS
         else:
             newstatus = LogSet.IN_PROGRESS_LATE
-    curr_lgst.log_time = LogSet.objects.latest_logtime(curr_lgst)
+    curr_lgst.log_time = curr_lgst.latest_logtime()
     curr_lgst.status = newstatus
     curr_lgst.save()
     return curr_lgst

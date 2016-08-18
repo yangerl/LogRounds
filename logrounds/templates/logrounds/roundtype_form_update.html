@@ -12,6 +12,6 @@
 <form method="POST" role="form"> {% csrf_token %}
     {{ form.as_p}}
     <button type="submit"> Submit </button>
-    <a href="{{request.META.HTTP_REFERER}}"> <button >Cancel</button></a>
 </form>
+<a href="{{request.META.HTTP_REFERER}}"> <button >Cancel</button></a>
 {% endblock %}

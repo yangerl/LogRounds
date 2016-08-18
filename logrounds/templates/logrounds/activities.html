@@ -10,15 +10,16 @@
 {% block html_body %}
 {{ page.html_body|safe }}
 <div id="header">
-    <h1 style= "font-size:48px">
-        {{round.rt_name}}
-        <br/>
-        Server Time: <span id='universal'></span>   
-    </h1>
-    <a href="{% url 'logrounds:detail' round.id %}" style="text-decoration:none">
-    <button id='back' type="button"> Back </button>
-    </a>
-    <br/>
+
+	<h1 style= "font-size:48px">
+		{{round.name}}
+		<br/>
+		Server Time: <span id='universal'></span>	
+	</h1>
+	<a href="{% url 'logrounds:detail' round.id %}" style="text-decoration:none">
+	<button id='back' type="button"> Back </button>
+	</a>
+	<br/>
 </div>
 <br/><br/>
 <div class='container'>
@@ -45,7 +46,7 @@
         </tr>
         {% for logdef in logdef_qs %}
         <tr>
-            <td> {{logdef}} </td>
+            <td> {{logdef.name}} </td>
             {% with logentry=lgdf_lgentry|lookup:logdef %}
             {% if logentry != None %}
             <td> 

@@ -19,6 +19,7 @@
 </div>
 {% if rounds_list and dd_list %}
 <table>
+
     <tr>
         <th> Round Name </th>
         <th> Next Due Date </th>
@@ -27,7 +28,7 @@
     {% with curr_rounds=dict|lookup:duedate %}
     {% for curr_round in curr_rounds %}
     <tr>
-        <td> <a href="{% url 'logrounds:detail' curr_round.id %}">{{ curr_round.rt_name }}</a></td>
+        <td> <a href="{% url 'logrounds:detail' curr_round.id %}">{{ curr_round.name }}</a></td>
         <td> 
             {% if duedate == max %}
             No LogDefs Created Yet! No Action Required

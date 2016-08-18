@@ -37,8 +37,9 @@
 
     <button type="submit"> Submit </button>
     <input type="hidden" name="next" value="request.path" />
-    <button formaction="{% url 'logrounds:index' %}">Cancel</button>
+    
 </form> 
+<a href="{% url 'logrounds:index' %}"><button>Cancel</button></a>
 <a href="{% url 'logrounds:new_period' %}?next={{request.path|urlencode}}" style='text-decoration: none'>
     <p><button>Add New Period</button></p>
 </a>
